@@ -1,0 +1,22 @@
+[package]
+name = "matterdb-derive"
+version = "1.0.0"
+edition = "2018"
+authors = ["Igor Aleksanov <popzxc@yandex.ru", "The Exonum Team <contact@exonum.com>"]
+repository = "https://github.com/popzxc/matterdb"
+documentation = "https://docs.rs/matterdb"
+readme = "README.md"
+license = "Apache-2.0"
+keywords = ["protobuf", "exonum"]
+categories = ["development-tools"]
+description = "Procedural macros for matterdb."
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling = "0.12.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "1.0"
+semver = "0.10"
