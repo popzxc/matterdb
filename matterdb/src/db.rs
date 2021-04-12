@@ -1,17 +1,3 @@
-// Copyright 2020 The Exonum Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap},
@@ -667,7 +653,7 @@ pub trait Snapshot: Send + Sync + 'static {
 
 /// A trait that defines a streaming iterator over storage view entries. Unlike
 /// the standard [`Iterator`](https://doc.rust-lang.org/std/iter/trait.Iterator.html)
-/// trait, `Iterator` in Exonum is low-level and, therefore, operates with bytes.
+/// trait, `Iterator` in `MatterDB` is low-level and, therefore, operates with bytes.
 pub trait Iterator {
     /// Advances the iterator and returns a reference to the next key and value.
     fn next(&mut self) -> Option<(&[u8], &[u8])>;

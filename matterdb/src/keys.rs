@@ -1,17 +1,3 @@
-// Copyright 2020 The Exonum Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 //! A definition of `BinaryKey` trait and implementations for common types.
 
 use byteorder::{BigEndian, ByteOrder};
@@ -321,7 +307,7 @@ impl BinaryKey for Decimal {
 
 #[cfg(test)]
 mod tests {
-    use super::{BigEndian, BinaryKey, ByteOrder, DateTime, Decimal, Utc, Uuid};
+    use super::{BinaryKey, DateTime, Decimal, Utc, Uuid};
     use crate::access::CopyAccessExt;
 
     use std::{fmt::Debug, str::FromStr};
@@ -433,68 +419,6 @@ mod tests {
         assert_eq!(index.iter_from(&6).collect::<Vec<_>>(), vec![]);
 
         assert_eq!(index.values().collect::<Vec<_>>(), vec![200, 100]);
-    }
-
-    // Example how to migrate from Exonum <= 0.5 implementation of `BinaryKey`
-    // for signed integers.
-    #[test]
-    fn test_old_signed_int_key_in_index() {
-        use crate::{Database, MapIndex, TemporaryDB};
-
-        // Simple wrapper around a signed integer type with the `BinaryKey` implementation,
-        // which was used in Exonum <= 0.5.
-        #[derive(Debug, PartialEq, Clone)]
-        struct QuirkyI32Key(i32);
-
-        impl BinaryKey for QuirkyI32Key {
-            fn size(&self) -> usize {
-                4
-            }
-
-            fn write(&self, buffer: &mut [u8]) -> usize {
-                BigEndian::write_i32(buffer, self.0);
-                self.size()
-            }
-
-            fn read(buffer: &[u8]) -> Self {
-                Self(BigEndian::read_i32(buffer))
-            }
-        }
-
-        let db: Box<dyn Database> = Box::new(TemporaryDB::default());
-        let fork = db.fork();
-        {
-            let mut index: MapIndex<_, QuirkyI32Key, u64> = fork.get_map("test_index");
-            index.put(&QuirkyI32Key(5), 100);
-            index.put(&QuirkyI32Key(-3), 200);
-        }
-        db.merge(fork.into_patch()).unwrap();
-
-        let snapshot = db.snapshot();
-        let index: MapIndex<_, QuirkyI32Key, u64> = snapshot.get_map("test_index");
-        assert_eq!(index.get(&QuirkyI32Key(5)), Some(100));
-        assert_eq!(index.get(&QuirkyI32Key(-3)), Some(200));
-
-        // Bunch of counterintuitive behavior here
-        assert_eq!(
-            index.iter_from(&QuirkyI32Key(-4)).collect::<Vec<_>>(),
-            vec![(QuirkyI32Key(-3), 200)]
-        );
-        assert_eq!(
-            index.iter_from(&QuirkyI32Key(-2)).collect::<Vec<_>>(),
-            vec![]
-        );
-        assert_eq!(
-            index.iter_from(&QuirkyI32Key(1)).collect::<Vec<_>>(),
-            vec![(QuirkyI32Key(5), 100), (QuirkyI32Key(-3), 200)]
-        );
-        assert_eq!(
-            index.iter_from(&QuirkyI32Key(6)).collect::<Vec<_>>(),
-            vec![(QuirkyI32Key(-3), 200)]
-        );
-
-        // Notice the different order of values compared to the previous test
-        assert_eq!(index.values().collect::<Vec<_>>(), vec![100, 200]);
     }
 
     #[test]

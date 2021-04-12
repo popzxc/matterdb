@@ -7,7 +7,7 @@ repository = "https://github.com/popzxc/matterdb"
 documentation = "https://docs.rs/matterdb"
 readme = "README.md"
 license = "Apache-2.0"
-keywords = ["protobuf", "exonum"]
+keywords = ["derive"]
 categories = ["development-tools"]
 description = "Procedural macros for matterdb."
 

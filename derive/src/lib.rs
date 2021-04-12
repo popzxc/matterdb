@@ -1,18 +1,4 @@
-// Copyright 2020 The Exonum Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-//! This crate provides macros for deriving some useful methods and traits for the exonum services.
+//! This crate provides macros for deriving some useful methods and traits for the MatterDB.
 
 #![recursion_limit = "128"]
 #![deny(unsafe_code, bare_trait_objects)]
@@ -22,9 +8,7 @@ extern crate proc_macro;
 
 mod db_traits;
 
-use darling::FromMeta;
 use proc_macro::TokenStream;
-use quote::ToTokens;
 use syn::{Attribute, NestedMeta};
 
 /// Derives `BinaryValue` trait. The target type must implement (de)serialization logic,
@@ -115,36 +99,4 @@ pub(crate) fn find_meta_attrs(name: &str, args: &[Attribute]) -> Option<NestedMe
         .filter_map(|a| a.parse_meta().ok())
         .find(|m| m.path().is_ident(name))
         .map(NestedMeta::from)
-}
-
-#[derive(Debug, FromMeta)]
-#[darling(default)]
-struct MainCratePath(syn::Path);
-
-impl Default for MainCratePath {
-    fn default() -> Self {
-        Self(syn::parse_str("exonum").unwrap())
-    }
-}
-
-impl ToTokens for MainCratePath {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.0.to_tokens(tokens)
-    }
-}
-
-#[derive(Debug, FromMeta)]
-#[darling(default)]
-struct RustRuntimeCratePath(syn::Path);
-
-impl Default for RustRuntimeCratePath {
-    fn default() -> Self {
-        Self(syn::parse_str("exonum_rust_runtime").unwrap())
-    }
-}
-
-impl ToTokens for RustRuntimeCratePath {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        self.0.to_tokens(tokens)
-    }
 }

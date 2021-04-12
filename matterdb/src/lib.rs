@@ -1,17 +1,3 @@
-// Copyright 2020 The Exonum Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 //! Interfaces to work with persisted data.
 //!
 //! # Database
@@ -19,7 +5,7 @@
 //! A [`Database`] is a container for data persistence. Internally, a `Database` is
 //! a collection of named key-value stores (aka column families)
 //! with reading isolation and atomic writes. The database is assumed to be embedded,
-//! that is, the Exonum process has exclusive access to the DB during blockchain operation.
+//! that is, the application process has exclusive access to the DB during operation.
 //! You can interact with the `Database` from multiple threads by cloning its instance.
 //!
 //! This crate provides two database types: [`RocksDB`] and [`TemporaryDB`].
