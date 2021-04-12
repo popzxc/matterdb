@@ -5,7 +5,7 @@ edition = "2018"
 authors = ["Igor Aleksanov <popzxc@yandex.ru", "The Exonum Team <contact@exonum.com>"]
 repository = "https://github.com/popzxc/matterdb"
 documentation = "https://docs.rs/matterdb"
-readme = "README.md"
+readme = "../README.md"
 license = "Apache-2.0"
 
 keywords = ["database"]
