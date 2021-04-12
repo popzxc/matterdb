@@ -42,7 +42,6 @@ enum ListAction<V> {
     // Applied to index modulo `collection.len()`.
     Set(u64, V),
     Clear,
-    FlushFork,
     MergeFork,
 }
 
@@ -137,7 +136,6 @@ fn generate_action() -> impl Strategy<Value = ListAction<i32>> {
         num::u64::ANY.prop_map(ListAction::Truncate),
         (num::u64::ANY, num::i32::ANY).prop_map(|(i, v)| ListAction::Set(i, v)),
         strategy::Just(ListAction::Clear),
-        strategy::Just(ListAction::FlushFork),
         strategy::Just(ListAction::MergeFork),
     ]
 }

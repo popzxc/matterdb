@@ -37,7 +37,6 @@ enum SetAction<V> {
     // Should be applied to a small subset of values (like modulo 8 for int).
     Remove(V),
     Clear,
-    FlushFork,
     MergeFork,
 }
 
@@ -55,7 +54,6 @@ fn generate_action() -> impl Strategy<Value = SetAction<u8>> {
         (0..8u8).prop_map(SetAction::Put),
         (0..8u8).prop_map(SetAction::Remove),
         strategy::Just(SetAction::Clear),
-        strategy::Just(SetAction::FlushFork),
         strategy::Just(SetAction::MergeFork),
     ]
 }

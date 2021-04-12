@@ -15,3 +15,5 @@ a.out
 tags
 *.orig
 Cargo.lock
+
+*.proptest-regressions
