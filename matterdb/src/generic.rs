@@ -32,16 +32,16 @@
 //! Basic usage of `ErasedAccess`:
 //!
 //! ```
-//! use exonum_merkledb::{
+//! use matterdb::{
 //!     access::{AccessExt, Prefixed}, migration::Migration, Database, TemporaryDB,
 //! };
-//! use exonum_merkledb::generic::{ErasedAccess, IntoErased};
+//! use matterdb::generic::{ErasedAccess, IntoErased};
 //!
 //! fn manipulate_db(access: &ErasedAccess<'_>) {
 //!     assert!(access.is_mutable());
 //!     let mut list = access.get_list::<_, u32>("list");
 //!     list.extend(vec![1, 2, 3]);
-//!     access.get_proof_entry("entry").set("!".to_owned());
+//!     access.get_entry("entry").set("!".to_owned());
 //! }
 //!
 //! fn check_db(access: &ErasedAccess<'_>) {
@@ -49,7 +49,7 @@
 //!     let list = access.get_list::<_, u32>("list");
 //!     assert_eq!(list.len(), 3);
 //!     assert_eq!(list.iter().collect::<Vec<_>>(), vec![1, 2, 3]);
-//!     let entry = access.get_proof_entry::<_, String>("entry");
+//!     let entry = access.get_entry::<_, String>("entry");
 //!     assert_eq!(entry.get().unwrap(), "!");
 //! }
 //!
@@ -78,8 +78,8 @@
 //! Use of `GenericRawAccess` with owned accesses:
 //!
 //! ```
-//! use exonum_merkledb::{access::AccessExt, Database, TemporaryDB};
-//! use exonum_merkledb::generic::GenericRawAccess;
+//! use matterdb::{access::AccessExt, Database, TemporaryDB};
+//! use matterdb::generic::GenericRawAccess;
 //! use std::rc::Rc;
 //!
 //! let db = TemporaryDB::new();

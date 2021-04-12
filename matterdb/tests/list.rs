@@ -16,7 +16,7 @@
 
 // cspell:ignore oneof
 
-//! Property testing for list index and proof list index as a rust collection.
+//! Property testing for list index as a rust collection.
 
 use modifier::Modifier;
 use proptest::{

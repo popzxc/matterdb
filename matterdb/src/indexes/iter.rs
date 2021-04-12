@@ -125,7 +125,7 @@ where
 /// Database object that supports iteration and continuing iteration from an intermediate position.
 ///
 /// This trait is implemented for all index collections (i.e., all index types except for
-/// `Entry` and `ProofEntry`) and can thus be used by the generic iteration routines.
+/// `Entry`) and can thus be used by the generic iteration routines.
 pub trait IndexIterator {
     /// Type encompassing index keys.
     type Key: BinaryKey + ?Sized;

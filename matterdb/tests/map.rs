@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Property testing for map index and proof map index as a rust collection.
+//! Property testing for map index as a rust collection.
 
 // cspell:ignore oneof
 

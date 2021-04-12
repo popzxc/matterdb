@@ -29,7 +29,7 @@ const MIGRATION_CHAR: u8 = b'^';
 /// by its address. Different addresses correspond to different indexes. Addresses with the same
 /// name and differing keys are said to belong to the same *group* (see also [`Group`]). Groups
 /// can be used for a potentially unbounded group of indexes that can be identified by a certain
-/// key (for example, `ProofListIndex` with the transaction history of a wallet keyed by the
+/// key (for example, `ListIndex` with the transaction history of a wallet keyed by the
 /// `PublicKey` of the wallet).
 ///
 /// In contrast with [`ResolvedAddress`], `IndexAddress` is a high-level logical construct;
@@ -44,7 +44,7 @@ const MIGRATION_CHAR: u8 = b'^';
 /// be converted into an address.
 ///
 /// ```
-/// use exonum_merkledb::{access::CopyAccessExt, IndexAddress, TemporaryDB, Database};
+/// use matterdb::{access::CopyAccessExt, IndexAddress, TemporaryDB, Database};
 ///
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
@@ -55,7 +55,7 @@ const MIGRATION_CHAR: u8 = b'^';
 /// let list = fork.get_list::<_, String>(("index", &3_u32));
 /// // Using `IndexAddress` explicitly:
 /// let addr = IndexAddress::from_root("data").append_key(&vec![1, 2, 3]);
-/// let set = fork.get_value_set::<_, u64>(addr);
+/// let set = fork.get_key_set::<_, u64>(addr);
 /// ```
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub struct IndexAddress {
@@ -90,7 +90,7 @@ impl IndexAddress {
     /// # Examples
     ///
     /// ```
-    /// # use exonum_merkledb::IndexAddress;
+    /// # use matterdb::IndexAddress;
     /// let addr = IndexAddress::from_root("foo");
     /// let prefixed = addr.prepend_name("prefix");
     /// assert_eq!(prefixed.name(), "prefix.foo");
@@ -112,7 +112,7 @@ impl IndexAddress {
     /// # Examples
     ///
     /// ```
-    /// # use exonum_merkledb::IndexAddress;
+    /// # use matterdb::IndexAddress;
     /// let addr = IndexAddress::from_root("foo");
     /// let suffixed = addr.append_name("suffix");
     /// assert_eq!(suffixed.name(), "foo.suffix");

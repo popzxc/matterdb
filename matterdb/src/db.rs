@@ -304,7 +304,7 @@ pub enum Change {
 /// the `flush` method.
 ///
 /// ```
-/// # use exonum_merkledb::{access::CopyAccessExt, Database, TemporaryDB};
+/// # use matterdb::{access::CopyAccessExt, Database, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let mut fork = db.fork();
 /// fork.get_list("list").extend(vec![1_u32, 2]);
@@ -330,7 +330,7 @@ pub enum Change {
 /// For example the code below will panic at runtime.
 ///
 /// ```rust,should_panic
-/// # use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, ListIndex, Database};
+/// # use matterdb::{access::CopyAccessExt, TemporaryDB, ListIndex, Database};
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
 /// let index = fork.get_list::<_, u8>("index");
@@ -341,7 +341,7 @@ pub enum Change {
 /// To enable immutable / shared references to indexes, you may use [`readonly`] method:
 ///
 /// ```
-/// # use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, ListIndex, Database};
+/// # use matterdb::{access::CopyAccessExt, TemporaryDB, ListIndex, Database};
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
 /// fork.get_list::<_, u8>("index").extend(vec![1, 2, 3]);
@@ -383,8 +383,8 @@ pub struct Fork {
 /// # Examples
 ///
 /// ```
-/// # use exonum_merkledb::{
-/// #     access::CopyAccessExt, Database, ObjectHash, Patch, SystemSchema, TemporaryDB,
+/// # use matterdb::{
+/// #     access::CopyAccessExt, Database, Patch, TemporaryDB,
 /// # };
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
@@ -393,9 +393,6 @@ pub struct Fork {
 /// // The patch contains changes recorded in the fork.
 /// let list = patch.get_list::<_, i32>("list");
 /// assert_eq!(list.len(), 3);
-/// // Unlike `Fork`, `Patch`es have consistent aggregated state.
-/// let aggregator = SystemSchema::new(&patch).state_aggregator();
-/// assert_eq!(aggregator.get("list").unwrap(), list.object_hash());
 /// ```
 #[derive(Debug)]
 pub struct Patch {
@@ -432,7 +429,7 @@ enum NextIterValue {
 /// rather than an exclusive one (`&mut self`). This means that the following code compiles:
 ///
 /// ```
-/// use exonum_merkledb::{access::CopyAccessExt, Database, TemporaryDB};
+/// use matterdb::{access::CopyAccessExt, Database, TemporaryDB};
 ///
 /// // not declared as `mut db`!
 /// let db: Box<dyn Database> = Box::new(TemporaryDB::new());
@@ -451,7 +448,7 @@ enum NextIterValue {
 /// workflow:
 ///
 /// ```
-/// # use exonum_merkledb::{Database, TemporaryDB};
+/// # use matterdb::{Database, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let first_fork = db.fork();
 /// // Perform some operations on `first_fork`...
@@ -464,7 +461,7 @@ enum NextIterValue {
 /// In contrast, this is a non-sequential workflow:
 ///
 /// ```
-/// # use exonum_merkledb::{Database, TemporaryDB};
+/// # use matterdb::{Database, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let first_fork = db.fork();
 /// // Perform some operations on `first_fork`...
@@ -481,7 +478,7 @@ enum NextIterValue {
 ///
 /// ```
 /// // NEVER USE THIS PATTERN!
-/// # use exonum_merkledb::{access::CopyAccessExt, Database, TemporaryDB};
+/// # use matterdb::{access::CopyAccessExt, Database, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let first_fork = db.fork();
 /// first_fork.get_list("list").extend(vec![1, 2, 3]);
@@ -572,7 +569,7 @@ pub trait DatabaseExt: Database {
     /// and then applying backups in the reverse order:
     ///
     /// ```
-    /// # use exonum_merkledb::{access::{Access, CopyAccessExt}, Database, DatabaseExt, TemporaryDB};
+    /// # use matterdb::{access::{Access, CopyAccessExt}, Database, DatabaseExt, TemporaryDB};
     /// let db = TemporaryDB::new();
     /// let fork = db.fork();
     /// fork.get_list("list").push(1_u32);
@@ -856,7 +853,7 @@ impl RawAccess for Rc<Fork> {
 /// # Examples
 ///
 /// ```
-/// # use exonum_merkledb::{access::CopyAccessExt, Database, ReadonlyFork, TemporaryDB};
+/// # use matterdb::{access::CopyAccessExt, Database, ReadonlyFork, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
 /// fork.get_list("list").push(1_u32);
@@ -874,7 +871,7 @@ impl RawAccess for Rc<Fork> {
 /// There are no write methods in indexes instantiated from `ReadonlyFork`:
 ///
 /// ```compile_fail
-/// # use exonum_merkledb::{access::CopyAccessExt, Database, ReadonlyFork, TemporaryDB};
+/// # use matterdb::{access::CopyAccessExt, Database, ReadonlyFork, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
 /// let readonly: ReadonlyFork<'_> = fork.readonly();
@@ -927,7 +924,7 @@ impl<'a> RawAccess for ReadonlyFork<'a> {
 /// # Examples
 ///
 /// ```
-/// # use exonum_merkledb::{access::AccessExt, AsReadonly, Database, OwnedReadonlyFork, TemporaryDB};
+/// # use matterdb::{access::AccessExt, AsReadonly, Database, OwnedReadonlyFork, TemporaryDB};
 /// # use std::rc::Rc;
 /// let db = TemporaryDB::new();
 /// let fork = Rc::new(db.fork());

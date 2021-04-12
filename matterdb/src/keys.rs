@@ -30,7 +30,7 @@ use uuid::Uuid;
 ///
 /// ```
 /// use std::mem;
-/// use exonum_merkledb::BinaryKey;
+/// use matterdb::BinaryKey;
 ///
 /// #[derive(Clone)]
 /// struct Key {

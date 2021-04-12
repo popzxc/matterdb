@@ -73,7 +73,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -92,7 +92,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -111,7 +111,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -130,7 +130,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -149,7 +149,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -169,7 +169,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -189,7 +189,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -209,7 +209,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -234,7 +234,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -252,7 +252,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();
@@ -282,7 +282,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use exonum_merkledb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
     ///
     /// let db = TemporaryDB::default();
     /// let fork = db.fork();

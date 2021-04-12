@@ -34,7 +34,7 @@ use uuid::Uuid;
 /// ```
 /// use std::{borrow::Cow, io::{Read, Write}};
 /// use byteorder::{LittleEndian, ReadBytesExt, ByteOrder};
-/// use exonum_merkledb::BinaryValue;
+/// use matterdb::BinaryValue;
 ///
 /// #[derive(Clone)]
 /// struct Data {

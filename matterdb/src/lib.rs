@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Interfaces to work with persisted blockchain data. The data can be *Merkelized*,
-//! i.e., stored into authenticated data structures, which allow to prove presence or absence
-//! of data with logarithmic overhead.
-//!
-//! See also [the documentation page on storage][doc:storage].
+//! Interfaces to work with persisted data.
 //!
 //! # Database
 //!
@@ -61,11 +57,6 @@
 //! that their key spaces do not intersect. Isolation is commonly achieved with the help
 //! of [`Group`]s or keyed [`IndexAddress`]es.
 //!
-//! Merkelized indexes can generate cryptographic proofs about inclusion
-//! of entries. Having such a proof, an external client may verify locally that the received data
-//! was authorized by the blockchain validators, without having to replicate
-//! the entire blockchain contents.
-//!
 //! This crate provides the following index types:
 //!
 //! - [`Entry`] is a specific index that stores only one value. Useful for global values, such as
@@ -74,32 +65,8 @@
 //! - [`SparseListIndex`] is a list of items stored in a sequential order. Similar to `ListIndex`,
 //!   but may contain indexes without elements.
 //! - [`MapIndex`] is a map of keys and values. Similar to [`BTreeMap`].
-//! - [`ProofEntry`] is a Merkelized version of `Entry`.
-//! - [`ProofListIndex`] is a Merkelized version of `ListIndex` that supports cryptographic
-//!   proofs of existence and is implemented as a Merkle tree.
-//! - [`ProofMapIndex`] is a Merkelized version of `MapIndex` that supports cryptographic
-//!   proofs of existence and is implemented as a binary Merkle Patricia tree.
 //! - [`KeySetIndex`] and [`ValueSetIndex`] are sets of items, similar to [`BTreeSet`] and
 //!   [`HashSet`] accordingly.
-//!
-//! # State aggregation
-//!
-//! The database automatically aggregates its contents into a single `state_hash`, which commits
-//! to the entire Merkelized database contents. For example, this is used in [Exonum] to achieve
-//! consensus as to the database state.
-//!
-//! The `state_hash` of the database is the hash of [`state_aggregator`], a system `ProofMapIndex`
-//! with keys being UTF-8 names of aggregated indexes, and values their hashes
-//! as per [`ObjectHash`] implementation. An index is aggregated if and only if it satisfies
-//! the following constraints:
-//!
-//! - Index has a matching type (`ProofListIndex`, `ProofMapIndex`, or `ProofEntry`)
-//! - Index is not a part of a group, i.e., its address does not contain the `bytes` part
-//!
-//! The aggregation is automatically updated when a `Fork` is converted into a `Patch`.
-//! Thus, `Snapshot`s (including `Patch`es!) are always consistent with respect
-//! to the aggregated state; the index hashes in the `state_aggregator` match their actual values.
-//! This is **not** the case for `Fork`s, in which `state_aggregator` may be stale.
 //!
 //! # Migrations
 //!
@@ -119,26 +86,19 @@
 //! [`BinaryKey`]: trait.BinaryKey.html
 //! [`BinaryValue`]: trait.BinaryValue.html
 //! [`Entry`]: indexes/struct.Entry.html
-//! [`ProofEntry`]: indexes/struct.ProofEntry.html
 //! [`ListIndex`]: indexes/struct.ListIndex.html
 //! [`SparseListIndex`]: indexes/struct.SparseListIndex.html
 //! [`MapIndex`]: indexes/struct.MapIndex.html
-//! [`ProofListIndex`]: indexes/proof_list/struct.ProofListIndex.html
-//! [`ProofMapIndex`]: indexes/proof_map/struct.ProofMapIndex.html
 //! [`KeySetIndex`]: indexes/struct.KeySetIndex.html
 //! [`ValueSetIndex`]: indexes/struct.ValueSetIndex.html
 //! [`ObjectHash`]: trait.ObjectHash.html
-//! [doc:storage]: https://exonum.com/doc/architecture/storage
 //! [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 //! [`Box`]: https://doc.rust-lang.org/std/boxed/struct.Box.html
 //! [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 //! [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 //! [`BTreeSet`]: https://doc.rust-lang.org/std/collections/struct.BTreeSet.html
 //! [`HashSet`]: https://doc.rust-lang.org/std/collections/struct.HashSet.html
-//! [`state_aggregator`]: struct.SystemSchema.html#method.state_aggregator
 //! [`Group`]: indexes/group/struct.Group.html
-//! [`IndexAddress`]: struct.IndexAddress.html
-//! [Exonum]: https://exonum.com/
 
 #![warn(
     missing_debug_implementations,
@@ -184,7 +144,7 @@ pub use self::{
     values::BinaryValue,
     views::{AsReadonly, IndexAddress, IndexType, ResolvedAddress},
 };
-// Workaround for 'Linked file at path {exonum_merkledb_path}/struct.ProofMapIndex.html
+// Workaround for 'Linked file at path {matterdb_path}/struct.MapIndex.html
 // does not exist!'
 #[doc(no_inline)]
 pub use self::indexes::{Entry, Group, KeySetIndex, ListIndex, MapIndex, SparseListIndex};

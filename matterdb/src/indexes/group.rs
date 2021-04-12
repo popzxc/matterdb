@@ -34,7 +34,7 @@ use crate::{
 /// may result in logical errors and data corruption. For example:
 ///
 /// ```
-/// # use exonum_merkledb::{
+/// # use matterdb::{
 /// #     access::{Access, CopyAccessExt, FromAccess},
 /// #     Database, Group, ListIndex, TemporaryDB,
 /// # };
@@ -56,7 +56,7 @@ use crate::{
 /// # Examples
 ///
 /// ```
-/// # use exonum_merkledb::{access::{CopyAccessExt, FromAccess}, Database, Group, ListIndex, TemporaryDB};
+/// # use matterdb::{access::{CopyAccessExt, FromAccess}, Database, Group, ListIndex, TemporaryDB};
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
 /// let group: Group<_, u64, ListIndex<_, u64>> = fork.get_group("group");
@@ -74,7 +74,7 @@ use crate::{
 /// Group keys can be unsized:
 ///
 /// ```
-/// # use exonum_merkledb::{access::CopyAccessExt, Database, Group, ListIndex, TemporaryDB};
+/// # use matterdb::{access::CopyAccessExt, Database, Group, ListIndex, TemporaryDB};
 /// # let db = TemporaryDB::new();
 /// # let fork = db.fork();
 /// let group: Group<_, str, ListIndex<_, u64>> = fork.get_group("unsized_group");

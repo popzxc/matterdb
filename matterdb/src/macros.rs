@@ -45,13 +45,13 @@ macro_rules! concat_keys {
 #[macro_export]
 macro_rules! impl_binary_key_for_binary_value {
     ($type:ty) => {
-        impl exonum_merkledb::BinaryKey for $type {
+        impl matterdb::BinaryKey for $type {
             fn size(&self) -> usize {
-                exonum_merkledb::BinaryValue::to_bytes(self).len()
+                matterdb::BinaryValue::to_bytes(self).len()
             }
 
             fn write(&self, buffer: &mut [u8]) -> usize {
-                let mut bytes = exonum_merkledb::BinaryValue::to_bytes(self);
+                let mut bytes = matterdb::BinaryValue::to_bytes(self);
                 buffer.swap_with_slice(&mut bytes);
                 bytes.len()
             }
@@ -59,7 +59,7 @@ macro_rules! impl_binary_key_for_binary_value {
             fn read(buffer: &[u8]) -> Self::Owned {
                 // `unwrap` is safe because only this code uses for
                 // serialize and deserialize these keys.
-                <Self as exonum_merkledb::BinaryValue>::from_bytes(buffer.into()).unwrap()
+                <Self as matterdb::BinaryValue>::from_bytes(buffer.into()).unwrap()
             }
         }
     };

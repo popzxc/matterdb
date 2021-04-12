@@ -101,17 +101,17 @@ where
 /// independently:
 ///
 /// ```
-/// # use exonum_merkledb::{access::{AccessExt, CopyAccessExt}, Database, TemporaryDB};
-/// # use exonum_merkledb::migration::{MigrationHelper, PersistentIter};
+/// # use matterdb::{access::{AccessExt, CopyAccessExt}, Database, TemporaryDB};
+/// # use matterdb::migration::{MigrationHelper, PersistentIter};
 /// let db = TemporaryDB::new();
 /// // Create data for migration.
 /// let fork = db.fork();
-/// fork.get_proof_list("migration.list").extend((0..123).map(|i| i.to_string()));
+/// fork.get_list("migration.list").extend((0..123).map(|i| i.to_string()));
 /// db.merge(fork.into_patch()).unwrap();
 ///
 /// let helper = MigrationHelper::new(db, "migration");
 /// // The old data is here.
-/// let list = helper.old_data().get_proof_list::<_, String>("list");
+/// let list = helper.old_data().get_list::<_, String>("list");
 /// // In the context of migration, persistent iterators should use
 /// // the scratchpad data access.
 /// let iter = PersistentIter::new(&helper.scratchpad(), "list_iter", &list);

@@ -60,70 +60,7 @@
 //!
 //! # Examples
 //!
-//! ```
-//! # use exonum_merkledb::{access::{AccessExt, CopyAccessExt}, Database, SystemSchema, TemporaryDB};
-//! # use exonum_merkledb::migration::{flush_migration, Migration, MigrationHelper};
-//! # use std::sync::Arc;
-//! #
-//! # fn main() -> anyhow::Result<()> {
-//! let db = Arc::new(TemporaryDB::new());
-//! // Create initial data in the database.
-//! let fork = db.fork();
-//! fork.get_list("test.list").extend(vec![1_u32, 2, 3]);
-//! fork.get_entry("test.entry").set("text".to_owned());
-//! fork.get_map(("test.group", &0_u8)).put(&1, 2);
-//! fork.get_map(("test.group", &1_u8)).put(&3, 4);
-//! db.merge(fork.into_patch())?;
-//! let initial_state_hash = SystemSchema::new(&db.snapshot()).state_hash();
-//!
-//! // Create migration helper.
-//! let mut migration = MigrationHelper::new(Arc::clone(&db) as Arc<dyn Database>, "test");
-//! {
-//!     // Merkelize the data in the list.
-//!     let old_list = migration.old_data().get_list::<_, u32>("list");
-//!     let new_data = migration.new_data();
-//!     new_data.get_list("list").extend(&old_list);
-//! }
-//!
-//! // It is possible to merge incomplete changes to the DB.
-//! migration.merge()?;
-//! // Changes in the migrated data do not influence the default state hash.
-//! let snapshot = db.snapshot();
-//! let intermediate_state_hash = SystemSchema::new(&snapshot).state_hash();
-//! assert_eq!(intermediate_state_hash, initial_state_hash);
-//! // Instead, they influence the state hash for the migration namespace
-//! // (i.e., `test` in this case).
-//! let aggregated = Migration::new("test", &snapshot).state_aggregator();
-//! assert!(aggregated.contains("test.list"));
-//! assert!(!aggregated.contains("test.entry"));
-//!
-//! // Leave `test.entry` in place (this is no op).
-//! // Remove one of indexes in `test.group`.
-//! migration.new_data().create_tombstone(("group", &0_u8));
-//! // Create a new index.
-//! migration.new_data().get_entry("other_entry").set("other".to_owned());
-//!
-//! // Finish the migration logic.
-//! let migration_hash = migration.finish()?;
-//! // For now, migrated and original data co-exist in the storage.
-//! let snapshot = db.snapshot();
-//! assert_eq!(snapshot.get_list::<_, u32>("test.list").len(), 3);
-//! let migration = Migration::new("test", &snapshot);
-//! assert_eq!(migration.get_list::<_, u32>("list").len(), 3);
-//!
-//! // The migration can be committed as follows.
-//! let mut fork = db.fork();
-//! flush_migration(&mut fork, "test");
-//! db.merge(fork.into_patch())?;
-//! let snapshot = db.snapshot();
-//! assert_eq!(snapshot.get_list::<_, u32>("test.list").len(), 3);
-//! assert_eq!(
-//!     snapshot.get_entry::<_, String>("test.other_entry").get().unwrap(),
-//!     "other"
-//! );
-//! # Ok(())
-//! # }
-//! ```
+//! None yet.
 
 pub use self::persistent_iter::{PersistentIter, PersistentIters, PersistentKeys};
 
@@ -345,8 +282,8 @@ impl<T: RawAccess> Access for Scratchpad<T> {
 ///
 /// ```
 /// # use assert_matches::assert_matches;
-/// # use exonum_merkledb::{access::CopyAccessExt, TemporaryDB};
-/// # use exonum_merkledb::migration::{MigrationHelper, MigrationError};
+/// # use matterdb::{access::CopyAccessExt, TemporaryDB};
+/// # use matterdb::migration::{MigrationHelper, MigrationError};
 /// # use std::{sync::mpsc, thread, time::Duration};
 /// let db = TemporaryDB::new();
 /// // Since `MigrationHelper` cannot be sent between threads, we instantiate it
@@ -368,45 +305,46 @@ impl<T: RawAccess> Access for Scratchpad<T> {
 /// assert_matches!(res, Err(MigrationError::Aborted));
 /// ```
 ///
-/// ## Using persistent iterators
-///
-/// `MigrationHelper` offers the [`iter_loop`](#method.iter_loop) method, which allows to further
-/// simplify working with [persistent iterators].
-///
-/// Say we want to migrate `MapIndex` data to a `ProofMapIndex` while merging changes to the DB
-/// from time to time. To do this, we use the following script:
-///
-/// ```
-/// # use exonum_merkledb::{access::AccessExt, TemporaryDB};
-/// # use exonum_merkledb::migration::{MigrationHelper, MigrationError};
-/// # fn main() -> Result<(), MigrationError> {
-/// /// Number of accounts processed per DB merge.
-/// const CHUNK_SIZE: usize = 100;
-///
-/// let db = TemporaryDB::new();
-/// let mut helper = MigrationHelper::new(db, "test");
-/// helper.iter_loop(|helper, iters| {
-///     // The data before migration is stored in this map
-///     let old_map = helper.old_data().get_map::<_, str, u64>("wallets");
-///     // ...and the new data is in this merkelized map.
-///     let mut new_map = helper.new_data().get_map::<_, str, u64>("wallets");
-///
-///     // Create an iterator over the old data.
-///     let iter = iters.create("wallets", &old_map);
-///     // Take a fixed amount of records from the iterator and migrate them.
-///     // Since `iter` is persistent, it will not return the same record twice,
-///     // even if this script is restarted.
-///     for (name, balance) in iter.take(CHUNK_SIZE) {
-///         new_map.put(&name, balance);
-///     }
-/// })?;
-/// // Here, the iterator has run out of items. The script can now perform
-/// // other actions if necessary.
-/// # Ok(())
-/// # }
-/// ```
-///
-/// [persistent iterators]: struct.PersistentIter.html
+// TODO: The following section was left because I'm not sure what to do with it right now.
+// ## Using persistent iterators
+//
+// `MigrationHelper` offers the [`iter_loop`](#method.iter_loop) method, which allows to further
+// simplify working with [persistent iterators].
+//
+// Say we want to migrate `MapIndex` data to a `ProofMapIndex` while merging changes to the DB
+// from time to time. To do this, we use the following script:
+//
+// ```
+// # use matterdb::{access::AccessExt, TemporaryDB};
+// # use matterdb::migration::{MigrationHelper, MigrationError};
+// # fn main() -> Result<(), MigrationError> {
+// /// Number of accounts processed per DB merge.
+// const CHUNK_SIZE: usize = 100;
+//
+// let db = TemporaryDB::new();
+// let mut helper = MigrationHelper::new(db, "test");
+// helper.iter_loop(|helper, iters| {
+//     // The data before migration is stored in this map
+//     let old_map = helper.old_data().get_map::<_, str, u64>("wallets");
+//     // ...and the new data is in this merkelized map.
+//     let mut new_map = helper.new_data().get_map::<_, str, u64>("wallets");
+//
+//     // Create an iterator over the old data.
+//     let iter = iters.create("wallets", &old_map);
+//     // Take a fixed amount of records from the iterator and migrate them.
+//     // Since `iter` is persistent, it will not return the same record twice,
+//     // even if this script is restarted.
+//     for (name, balance) in iter.take(CHUNK_SIZE) {
+//         new_map.put(&name, balance);
+//     }
+// })?;
+// // Here, the iterator has run out of items. The script can now perform
+// // other actions if necessary.
+// # Ok(())
+// # }
+// ```
+//
+// [persistent iterators]: struct.PersistentIter.html
 pub struct MigrationHelper {
     db: Arc<dyn Database>,
     abort_handle: Box<dyn AbortMigration>,

@@ -84,11 +84,11 @@ mod extensions;
 /// readonly methods:
 ///
 /// ```
-/// use exonum_merkledb::{access::Access, ListIndex, ProofMapIndex};
+/// use matterdb::{access::Access, ListIndex, MapIndex};
 ///
 /// struct Schema<T: Access> {
 ///     list: ListIndex<T::Base, u64>,
-///     map: ProofMapIndex<T::Base, str, u64>,
+///     map: MapIndex<T::Base, str, u64>,
 /// }
 ///
 /// impl<T: Access> Schema<T> {
@@ -162,7 +162,7 @@ impl<T: RawAccess> Access for T {
 /// # Examples
 ///
 /// ```
-/// use exonum_merkledb::{access::{AccessExt, CopyAccessExt, Prefixed}, Database, TemporaryDB};
+/// use matterdb::{access::{AccessExt, CopyAccessExt, Prefixed}, Database, TemporaryDB};
 ///
 /// let db = TemporaryDB::new();
 /// let fork = db.fork();
@@ -304,11 +304,11 @@ pub enum AccessErrorKind {
 /// # Examples
 ///
 /// Component with two inner indexes. `FromAccess` is automatically derived using
-/// the `exonum_derive` crate.
+/// the `matterdb_derive` crate.
 ///
 /// ```
-/// use exonum_derive::FromAccess;
-/// # use exonum_merkledb::{
+/// use matterdb_derive::FromAccess;
+/// # use matterdb::{
 /// #     access::{Access, CopyAccessExt, AccessError, FromAccess, RawAccessMut},
 /// #     Database, Entry, Group, Lazy, MapIndex, IndexAddress, TemporaryDB,
 /// # };

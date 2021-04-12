@@ -121,7 +121,7 @@ pub trait RawAccess: Clone {
 /// # Example
 ///
 /// ```
-/// use exonum_merkledb::{access::{Access, RawAccessMut}, ListIndex, MapIndex};
+/// use matterdb::{access::{Access, RawAccessMut}, ListIndex, MapIndex};
 ///
 /// pub struct Schema<T: Access> {
 ///     list: ListIndex<T::Base, String>,
