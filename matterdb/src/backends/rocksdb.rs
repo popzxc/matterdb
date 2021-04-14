@@ -24,6 +24,7 @@ pub const ID_SIZE: usize = mem::size_of::<u64>();
 /// `RocksDB` is an embedded database for key-value data, which is optimized for fast storage.
 /// This structure is required to potentially adapt the interface to
 /// use different databases.
+#[derive(Clone)]
 pub struct RocksDB {
     db: Arc<ShardedLock<rocksdb::DB>>,
     options: DbOptions,
