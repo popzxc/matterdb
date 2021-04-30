@@ -8,7 +8,7 @@ use serde_derive::{Deserialize, Serialize};
 /// These parameters apply to the underlying database, currently `RocksDB`.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[non_exhaustive]
-pub struct DbOptions {
+pub struct DBOptions {
     /// Number of open files that can be used by the database.
     ///
     /// The underlying database opens multiple files during operation. If your system has a
@@ -39,8 +39,8 @@ pub struct DbOptions {
     pub max_total_wal_size: Option<u64>,
 }
 
-impl DbOptions {
-    /// Creates a new `DbOptions` object.
+impl DBOptions {
+    /// Creates a new `DBOptions` object.
     pub fn new(
         max_open_files: Option<i32>,
         create_if_missing: bool,
@@ -88,7 +88,7 @@ impl From<CompressionType> for DBCompressionType {
     }
 }
 
-impl Default for DbOptions {
+impl Default for DBOptions {
     fn default() -> Self {
         Self::new(None, true, CompressionType::None, None)
     }

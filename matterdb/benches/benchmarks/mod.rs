@@ -1,6 +1,6 @@
 #![allow(clippy::upper_case_acronyms)]
 
-use matterdb::{Database, DbOptions, Fork, Patch, Result, RocksDB, Snapshot};
+use matterdb::{DBOptions, Database, Fork, Patch, Result, RocksDB, Snapshot};
 use tempfile::{tempdir, TempDir};
 
 pub mod encoding;
@@ -16,7 +16,7 @@ impl BenchDB {
     pub(crate) fn new() -> Self {
         let dir = tempdir().expect("Couldn't create tempdir");
         let db =
-            RocksDB::open(dir.path(), &DbOptions::default()).expect("Couldn't create database");
+            RocksDB::open(dir.path(), &DBOptions::default()).expect("Couldn't create database");
         Self { _dir: dir, db }
     }
 
