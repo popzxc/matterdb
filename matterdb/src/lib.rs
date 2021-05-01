@@ -118,7 +118,10 @@ pub mod _reexports {
 }
 
 pub use self::{
-    backends::{rocksdb::RocksDB, temporarydb::TemporaryDB},
+    backends::{
+        rocksdb::{self, RocksDB},
+        temporarydb::TemporaryDB,
+    },
     db::{
         Database, DatabaseExt, Fork, Iter, Iterator, OwnedReadonlyFork, Patch, ReadonlyFork,
         Snapshot,
@@ -126,7 +129,7 @@ pub use self::{
     error::Error,
     keys::BinaryKey,
     lazy::Lazy,
-    options::DbOptions,
+    options::DBOptions,
     values::BinaryValue,
     views::{AsReadonly, IndexAddress, IndexType, ResolvedAddress},
 };

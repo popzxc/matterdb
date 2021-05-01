@@ -1,17 +1,24 @@
 //! An implementation of `RocksDB` database.
 
-pub use rocksdb::{BlockBasedOptions as RocksBlockOptions, WriteOptions as RocksDBWriteOptions};
+/// Backup-related stuff for `RocksDB` database.
+pub mod backup {
+    pub use rocksdb::backup::{
+        BackupEngine as RocksDBBackupEngine, BackupEngineInfo as RocksDBBackupEngineInfo,
+        BackupEngineOptions as RocksDBBackupEngineOptions,
+    };
+}
 
 use crossbeam::sync::{ShardedLock, ShardedLockReadGuard};
 use rocksdb::{
-    self, checkpoint::Checkpoint, ColumnFamily, DBIterator, Options as RocksDbOptions, WriteBatch,
+    self, checkpoint::Checkpoint, ColumnFamily, DBIterator, Options as RocksDBOptions, WriteBatch,
+    WriteOptions as RocksDBWriteOptions,
 };
 use smallvec::SmallVec;
 use std::{fmt, iter::Peekable, mem, path::Path, sync::Arc};
 
 use crate::{
     db::{check_database, Change},
-    Database, DbOptions, Iter, Iterator, Patch, ResolvedAddress, Snapshot,
+    DBOptions, Database, Iter, Iterator, Patch, ResolvedAddress, Snapshot,
 };
 
 /// Size of a byte representation of an index ID, which is used to prefix index keys
@@ -27,17 +34,17 @@ pub const ID_SIZE: usize = mem::size_of::<u64>();
 #[derive(Clone)]
 pub struct RocksDB {
     db: Arc<ShardedLock<rocksdb::DB>>,
-    options: DbOptions,
+    options: DBOptions,
 }
 
-impl From<DbOptions> for RocksDbOptions {
-    fn from(opts: DbOptions) -> Self {
+impl From<DBOptions> for RocksDBOptions {
+    fn from(opts: DBOptions) -> Self {
         Self::from(&opts)
     }
 }
 
-impl From<&DbOptions> for RocksDbOptions {
-    fn from(opts: &DbOptions) -> Self {
+impl From<&DBOptions> for RocksDBOptions {
+    fn from(opts: &DBOptions) -> Self {
         let mut defaults = Self::default();
         defaults.create_if_missing(opts.create_if_missing);
         defaults.set_compression_type(opts.compression_type.into());
@@ -66,11 +73,11 @@ impl RocksDB {
     /// Opens a database stored at the specified path with the specified options.
     ///
     /// If the database does not exist at the indicated path and the option
-    /// `create_if_missing` is switched on in `DbOptions`, a new database will
+    /// `create_if_missing` is switched on in `DBOptions`, a new database will
     /// be created at the indicated path.
-    pub fn open<P: AsRef<Path>>(path: P, options: &DbOptions) -> crate::Result<Self> {
+    pub fn open<P: AsRef<Path>>(path: P, options: &DBOptions) -> crate::Result<Self> {
         let inner = {
-            if let Ok(names) = rocksdb::DB::list_cf(&RocksDbOptions::default(), &path) {
+            if let Ok(names) = rocksdb::DB::list_cf(&RocksDBOptions::default(), &path) {
                 let cf_names = names.iter().map(String::as_str).collect::<Vec<_>>();
                 rocksdb::DB::open_cf(&options.into(), path, cf_names)?
             } else {

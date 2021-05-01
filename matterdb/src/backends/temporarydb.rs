@@ -10,7 +10,7 @@ use std::{
 
 use crate::{
     backends::rocksdb::{next_id_bytes, ID_SIZE},
-    db::{check_database, Change, Iterator as DbIterator},
+    db::{check_database, Change, Iterator as DBIterator},
     Database, Iter, Patch, ResolvedAddress, Result, Snapshot,
 };
 
@@ -124,7 +124,7 @@ impl Database for TemporaryDB {
     }
 }
 
-impl<'a> DbIterator for TemporaryDBIterator<'a> {
+impl<'a> DBIterator for TemporaryDBIterator<'a> {
     fn next(&mut self) -> Option<(&[u8], &[u8])> {
         if self.ended {
             return None;

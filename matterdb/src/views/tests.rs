@@ -8,7 +8,7 @@ use crate::{
     db,
     validation::is_valid_identifier,
     views::{IndexAddress, IndexType, RawAccess, View, ViewWithMetadata},
-    Database, DbOptions, Fork, ListIndex, MapIndex, ResolvedAddress, RocksDB, TemporaryDB,
+    DBOptions, Database, Fork, ListIndex, MapIndex, ResolvedAddress, RocksDB, TemporaryDB,
 };
 
 const IDX_NAME: &str = "idx_name";
@@ -361,7 +361,7 @@ fn test_database_check_correct_version() {
 #[should_panic(expected = "actual 2, expected 0")]
 fn test_database_check_incorrect_version() {
     let dir = tempfile::TempDir::new().unwrap();
-    let opts = DbOptions::default();
+    let opts = DBOptions::default();
     // Writes different version to metadata.
     {
         let db = RocksDB::open(&dir, &opts).unwrap();
