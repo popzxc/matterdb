@@ -99,18 +99,18 @@ impl RocksDB {
     ///
     /// [`RocksDB` docs]: https://github.com/facebook/rocksdb/wiki/Checkpoints
     pub fn create_checkpoint<T: AsRef<Path>>(&self, path: T) -> crate::Result<()> {
-        let checkpoint = Checkpoint::new(&*self.get_lock_guard())?;
+        let checkpoint = Checkpoint::new(&*self.get_db_lock_guard())?;
         checkpoint.create_checkpoint(path)?;
         Ok(())
     }
 
     /// Retrives lock guard containing underlying `rocksdb::DB`.
-    pub fn get_lock_guard(&self) -> ShardedLockReadGuard<'_, rocksdb::DB> {
+    pub fn get_db_lock_guard(&self) -> ShardedLockReadGuard<'_, rocksdb::DB> {
         self.db.read().expect("Couldn't get read lock to DB")
     }
 
     fn cf_exists(&self, cf_name: &str) -> bool {
-        self.get_lock_guard().cf_handle(cf_name).is_some()
+        self.get_db_lock_guard().cf_handle(cf_name).is_some()
     }
 
     fn create_cf(&self, cf_name: &str) -> crate::Result<()> {
@@ -126,7 +126,7 @@ impl RocksDB {
         /// Some lexicographically large key.
         const LARGER_KEY: &[u8] = &[u8::max_value(); 1_024];
 
-        let db_reader = self.get_lock_guard();
+        let db_reader = self.get_db_lock_guard();
         let mut iter = db_reader.raw_iterator_cf(cf);
         iter.seek_to_last();
         if iter.valid() {
@@ -153,7 +153,7 @@ impl RocksDB {
                 self.create_cf(&resolved.name)?;
             }
 
-            let db_reader = self.get_lock_guard();
+            let db_reader = self.get_db_lock_guard();
             let cf = db_reader.cf_handle(&resolved.name).unwrap();
 
             if changes.is_cleared() {
@@ -188,7 +188,7 @@ impl RocksDB {
             }
         }
 
-        self.get_lock_guard()
+        self.get_db_lock_guard()
             .write_opt(batch, w_opts)
             .map_err(Into::into)
     }
@@ -214,7 +214,7 @@ impl RocksDB {
             // the snapshot (`*mut ffi::rocksdb_t`) is never changed, i.e., not affected
             // by potential incoherence if the `ShardedLock` is being concurrently written to.
             // FIXME: Investigate changing `rocksdb::Snapshot` / `DB` to remove `unsafe` (ECR-4273).
-            snapshot: unsafe { mem::transmute(self.get_lock_guard().snapshot()) },
+            snapshot: unsafe { mem::transmute(self.get_db_lock_guard().snapshot()) },
             db: Arc::clone(&self.db),
         }
     }
