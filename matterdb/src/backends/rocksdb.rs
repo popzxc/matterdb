@@ -104,6 +104,11 @@ impl RocksDB {
         Ok(())
     }
 
+    /// Retrives lock guard containing underlying `rocksdb::DB`.
+    pub fn get_lock_guard(&self) -> ShardedLockReadGuard<'_, rocksdb::DB> {
+        self.db.read().expect("Couldn't get read lock to DB")
+    }
+
     fn cf_exists(&self, cf_name: &str) -> bool {
         self.get_lock_guard().cf_handle(cf_name).is_some()
     }
@@ -114,10 +119,6 @@ impl RocksDB {
             .expect("Couldn't get write lock to DB")
             .create_cf(cf_name, &self.options.into())
             .map_err(Into::into)
-    }
-
-    pub(super) fn get_lock_guard(&self) -> ShardedLockReadGuard<'_, rocksdb::DB> {
-        self.db.read().expect("Couldn't get read lock to DB")
     }
 
     /// Clears the column family completely, removing all keys from it.
