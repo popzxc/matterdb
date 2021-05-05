@@ -4,7 +4,7 @@
 pub mod backup {
     pub use rocksdb::backup::{
         BackupEngine as RocksDBBackupEngine, BackupEngineInfo as RocksDBBackupEngineInfo,
-        BackupEngineOptions as RocksDBBackupEngineOptions,
+        BackupEngineOptions as RocksDBBackupEngineOptions, RestoreOptions as RocksDBRestoreOptions,
     };
 }
 
