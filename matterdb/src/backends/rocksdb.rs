@@ -99,7 +99,8 @@ impl RocksDB {
     ///
     /// [`RocksDB` docs]: https://github.com/facebook/rocksdb/wiki/Checkpoints
     pub fn create_checkpoint<T: AsRef<Path>>(&self, path: T) -> crate::Result<()> {
-        let checkpoint = Checkpoint::new(&*self.get_db_lock_guard())?;
+        let guard = self.get_db_lock_guard();
+        let checkpoint = Checkpoint::new(&*guard)?;
         checkpoint.create_checkpoint(path)?;
         Ok(())
     }
@@ -137,9 +138,9 @@ impl RocksDB {
                 // is mostly used for testing, this optimization leads to practical
                 // performance improvement.
                 if key.len() < LARGER_KEY.len() {
-                    batch.delete_range_cf::<&[u8]>(cf, &[], LARGER_KEY);
+                    batch.delete_range_cf(cf, &[][..], LARGER_KEY);
                 } else {
-                    batch.delete_range_cf::<&[u8]>(cf, &[], key);
+                    batch.delete_range_cf(cf, &[][..], key);
                     batch.delete_cf(cf, &key);
                 }
             }
