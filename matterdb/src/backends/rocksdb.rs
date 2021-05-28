@@ -10,8 +10,8 @@ pub mod backup {
 
 use crossbeam::sync::{ShardedLock, ShardedLockReadGuard};
 use rocksdb::{
-    self, checkpoint::Checkpoint, ColumnFamily, DBIterator, Options as RocksDBOptions, WriteBatch,
-    WriteOptions as RocksDBWriteOptions,
+    self, checkpoint::Checkpoint, Cache as RocksDBCache, ColumnFamily, DBIterator,
+    Options as RocksDBOptions, WriteBatch, WriteOptions as RocksDBWriteOptions,
 };
 use smallvec::SmallVec;
 use std::{fmt, iter::Peekable, mem, path::Path, sync::Arc};
@@ -50,6 +50,12 @@ impl From<&DBOptions> for RocksDBOptions {
         defaults.set_compression_type(opts.compression_type.into());
         defaults.set_max_open_files(opts.max_open_files.unwrap_or(-1));
         defaults.set_max_total_wal_size(opts.max_total_wal_size.unwrap_or(0));
+        if let Some(capacity) = opts.max_cache_size {
+            defaults.set_row_cache(
+                &RocksDBCache::new_lru_cache(capacity)
+                    .expect("Failed to instantiate `Cache` for `RocksDB`"),
+            );
+        }
         defaults
     }
 }
