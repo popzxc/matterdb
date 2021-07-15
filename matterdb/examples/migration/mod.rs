@@ -12,7 +12,7 @@
 
 use matterdb_derive::{BinaryValue, FromAccess};
 use rand::{seq::SliceRandom, thread_rng, Rng};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use std::sync::Arc;
 

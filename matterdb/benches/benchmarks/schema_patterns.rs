@@ -1,7 +1,7 @@
 use criterion::{black_box, Bencher, Criterion, Throughput};
 use matterdb_derive::{BinaryValue, FromAccess};
 use rand::{rngs::StdRng, Rng, SeedableRng};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use matterdb::{
     access::{Access, AccessExt, FromAccess, Prefixed, RawAccessMut},
