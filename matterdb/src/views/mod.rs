@@ -212,9 +212,9 @@ impl<T: RawAccess> View<T> {
         let address = address.into();
         let changes = index_access.changes(&address);
         Self::Real(ViewInner {
+            address,
             index_access,
             changes,
-            address,
         })
     }
 

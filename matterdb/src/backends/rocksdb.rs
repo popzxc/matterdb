@@ -264,14 +264,11 @@ impl Database for RocksDB {
 
 impl Snapshot for RocksDBSnapshot {
     fn get(&self, resolved_addr: &ResolvedAddress, key: &[u8]) -> Option<Vec<u8>> {
-        if let Some(cf) = self.get_lock_guard().cf_handle(&resolved_addr.name) {
-            match self.snapshot.get_cf(cf, resolved_addr.keyed(key)) {
-                Ok(value) => value.map(|v| v.to_vec()),
-                Err(e) => panic!("{}", e),
-            }
-        } else {
-            None
-        }
+        let lock = self.get_lock_guard();
+        let cf = lock.cf_handle(&resolved_addr.name)?;
+        self.snapshot
+            .get_cf(cf, resolved_addr.keyed(key))
+            .unwrap_or_else(|e| panic!("{}", e))
     }
 
     fn iter(&self, name: &ResolvedAddress, from: &[u8]) -> Iter<'_> {

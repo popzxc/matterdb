@@ -1,3 +1,5 @@
+#![allow(clippy::use_self)] // False positive, most likely implied by `enum_primitive_derive`.
+
 use anyhow::{ensure, format_err};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use enum_primitive_derive::Primitive;
@@ -486,7 +488,7 @@ where
         index_type: IndexType,
     ) -> Result<Self, AccessError> {
         check_index_valid_full_name(&index_address.name).map_err(|kind| AccessError {
-            addr: index_address.to_owned(),
+            addr: index_address.clone(),
             kind,
         })?;
         Self::get_or_create_unchecked(index_access, index_address, index_type)
@@ -499,7 +501,7 @@ where
         index_address: &IndexAddress,
     ) -> Result<Option<IndexMetadata>, AccessError> {
         check_index_valid_full_name(index_address.name()).map_err(|kind| AccessError {
-            addr: index_address.to_owned(),
+            addr: index_address.clone(),
             kind,
         })?;
         Ok(Self::get_metadata_unchecked(index_access, index_address))
@@ -529,7 +531,7 @@ where
         if index_type == IndexType::Tombstone && !index_address.in_migration {
             return Err(AccessError {
                 kind: AccessErrorKind::InvalidTombstone,
-                addr: index_address.to_owned(),
+                addr: index_address.clone(),
             });
         }
 
