@@ -1,3 +1,5 @@
+#![allow(clippy::let_underscore_drop)]
+
 use assert_matches::assert_matches;
 use url::form_urlencoded::byte_serialize;
 
