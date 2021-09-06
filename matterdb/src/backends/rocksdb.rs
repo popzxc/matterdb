@@ -10,8 +10,8 @@ pub mod backup {
 
 use crossbeam::sync::{ShardedLock, ShardedLockReadGuard};
 use rocksdb::{
-    self, checkpoint::Checkpoint, ColumnFamily, DBIterator, Options as RocksDBOptions, WriteBatch,
-    WriteOptions as RocksDBWriteOptions,
+    self, checkpoint::Checkpoint, Cache as RocksDBCache, ColumnFamily, DBIterator,
+    Options as RocksDBOptions, WriteBatch, WriteOptions as RocksDBWriteOptions,
 };
 use smallvec::SmallVec;
 use std::{fmt, iter::Peekable, mem, path::Path, sync::Arc};
@@ -50,6 +50,12 @@ impl From<&DBOptions> for RocksDBOptions {
         defaults.set_compression_type(opts.compression_type.into());
         defaults.set_max_open_files(opts.max_open_files.unwrap_or(-1));
         defaults.set_max_total_wal_size(opts.max_total_wal_size.unwrap_or(0));
+        if let Some(capacity) = opts.max_cache_size {
+            defaults.set_row_cache(
+                &RocksDBCache::new_lru_cache(capacity)
+                    .expect("Failed to instantiate `Cache` for `RocksDB`"),
+            );
+        }
         defaults
     }
 }
@@ -99,7 +105,8 @@ impl RocksDB {
     ///
     /// [`RocksDB` docs]: https://github.com/facebook/rocksdb/wiki/Checkpoints
     pub fn create_checkpoint<T: AsRef<Path>>(&self, path: T) -> crate::Result<()> {
-        let checkpoint = Checkpoint::new(&*self.get_db_lock_guard())?;
+        let guard = self.get_db_lock_guard();
+        let checkpoint = Checkpoint::new(&*guard)?;
         checkpoint.create_checkpoint(path)?;
         Ok(())
     }
@@ -137,9 +144,9 @@ impl RocksDB {
                 // is mostly used for testing, this optimization leads to practical
                 // performance improvement.
                 if key.len() < LARGER_KEY.len() {
-                    batch.delete_range_cf::<&[u8]>(cf, &[], LARGER_KEY);
+                    batch.delete_range_cf(cf, &[][..], LARGER_KEY);
                 } else {
-                    batch.delete_range_cf::<&[u8]>(cf, &[], key);
+                    batch.delete_range_cf(cf, &[][..], key);
                     batch.delete_cf(cf, &key);
                 }
             }
