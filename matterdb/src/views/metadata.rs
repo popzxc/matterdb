@@ -1,10 +1,8 @@
 use anyhow::{ensure, format_err};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use enum_primitive_derive::Primitive;
-use num_traits::FromPrimitive;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
-use std::{borrow::Cow, io::Error, mem, num::NonZeroU64, vec};
+use std::{borrow::Cow, convert::TryFrom, io::Error, mem, num::NonZeroU64, vec};
 
 use crate::{
     access::{AccessError, AccessErrorKind},
@@ -19,7 +17,7 @@ const INDEXES_POOL_NAME: &str = "__INDEXES_POOL__";
 /// Type of an index supported by `MatterDB`.
 ///
 /// `IndexType` is used for type checking indexes when they are created/accessed.
-#[derive(Debug, Copy, Clone, PartialEq, Primitive, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[repr(u32)]
 pub enum IndexType {
     /// Non-merkelized map index.
@@ -39,6 +37,24 @@ pub enum IndexType {
     /// Unknown index type.
     #[doc(hidden)]
     Unknown = 255,
+}
+
+impl TryFrom<u32> for IndexType {
+    type Error = &'static str;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        let value = match value {
+            1 => Self::Map,
+            2 => Self::List,
+            3 => Self::Entry,
+            5 => Self::KeySet,
+            6 => Self::SparseList,
+            254 => Self::Tombstone,
+            255 => Self::Unknown,
+            _ => return Err("Unknown index type"),
+        };
+        Ok(value)
+    }
 }
 
 /// Index state attribute tag.
@@ -148,8 +164,8 @@ where
         let identifier = NonZeroU64::new(bytes.read_u64::<LittleEndian>()?)
             .ok_or_else(|| format_err!("IndexMetadata identifier is 0"))?;
         let index_type = bytes.read_u32::<LittleEndian>()?;
-        let index_type = IndexType::from_u32(index_type)
-            .ok_or_else(|| format_err!("Unknown index type: {}", index_type))?;
+        let index_type = IndexType::try_from(index_type)
+            .map_err(|_| format_err!("Unknown index type: {}", index_type))?;
 
         if bytes.is_empty() {
             // There are no tags in the metadata, correspondingly, no index state.
@@ -486,7 +502,7 @@ where
         index_type: IndexType,
     ) -> Result<Self, AccessError> {
         check_index_valid_full_name(&index_address.name).map_err(|kind| AccessError {
-            addr: index_address.to_owned(),
+            addr: index_address.clone(),
             kind,
         })?;
         Self::get_or_create_unchecked(index_access, index_address, index_type)
@@ -499,7 +515,7 @@ where
         index_address: &IndexAddress,
     ) -> Result<Option<IndexMetadata>, AccessError> {
         check_index_valid_full_name(index_address.name()).map_err(|kind| AccessError {
-            addr: index_address.to_owned(),
+            addr: index_address.clone(),
             kind,
         })?;
         Ok(Self::get_metadata_unchecked(index_access, index_address))
@@ -529,7 +545,7 @@ where
         if index_type == IndexType::Tombstone && !index_address.in_migration {
             return Err(AccessError {
                 kind: AccessErrorKind::InvalidTombstone,
-                addr: index_address.to_owned(),
+                addr: index_address.clone(),
             });
         }
 

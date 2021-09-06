@@ -611,7 +611,7 @@ pub trait DatabaseExt: Database {
             }
 
             rev_changes.insert(
-                name.to_owned(),
+                name.clone(),
                 ViewChanges {
                     data: view_changes,
                     is_cleared: false,
@@ -1169,7 +1169,7 @@ mod tests {
         let mut patch_set: HashSet<_> = HashSet::new();
         for (name, changes) in &patch.changes {
             for (key, value) in &changes.data {
-                patch_set.insert((name.to_owned(), key.as_slice(), value.to_owned()));
+                patch_set.insert((name.clone(), key.as_slice(), value.clone()));
             }
         }
         let expected_set: HashSet<_> = changes

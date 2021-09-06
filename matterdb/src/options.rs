@@ -1,7 +1,7 @@
 //! Abstract settings for databases.
 
 use rocksdb::DBCompressionType;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Options for the database.
 ///

@@ -26,7 +26,6 @@ macro_rules! concat_keys {
     });
 }
 
-// Think about bincode instead of protobuf. [ECR-3222]
 /// Implements `BinaryKey` trait for any type that implements `BinaryValue`.
 #[macro_export]
 macro_rules! impl_binary_key_for_binary_value {
