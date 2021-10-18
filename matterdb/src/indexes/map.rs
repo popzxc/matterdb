@@ -73,6 +73,29 @@ where
         self.base.get(key)
     }
 
+    /// Returns values corresponding to the keys.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    ///
+    /// let db = TemporaryDB::default();
+    /// let fork = db.fork();
+    /// let mut index = fork.get_map("name");
+    /// assert!(index.get(&1).is_none());
+    ///
+    /// index.put(&1, 2);
+    /// assert_eq!(Some(2), index.get(&1));
+    /// ```
+    pub fn multi_get<'a, I: 'a>(&self, keys: I) -> Vec<Option<V>>
+    where
+        K: 'a,
+        I: IntoIterator<Item = &'a K>,
+    {
+        self.base.multi_get(keys)
+    }
+
     /// Returns `true` if the map contains a value corresponding to the specified key.
     ///
     /// # Examples

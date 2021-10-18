@@ -14,7 +14,7 @@ use rocksdb::{
     Options as RocksDBOptions, WriteBatch, WriteOptions as RocksDBWriteOptions,
 };
 use smallvec::SmallVec;
-use std::{fmt, iter::Peekable, mem, path::Path, sync::Arc};
+use std::{fmt, iter, iter::Peekable, mem, path::Path, sync::Arc};
 
 use crate::{
     db::{check_database, Change},
@@ -275,6 +275,25 @@ impl Snapshot for RocksDBSnapshot {
         let cf = lock.cf_handle(&resolved_addr.name)?;
         self.snapshot
             .get_cf(cf, resolved_addr.keyed(key))
+            .unwrap_or_else(|e| panic!("{}", e))
+    }
+
+    fn multi_get<'a>(
+        &self,
+        resolved_addr: &ResolvedAddress,
+        keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
+    ) -> Vec<Option<Vec<u8>>> {
+        let lock = self.get_lock_guard();
+        let cf = if let Some(cf) = lock.cf_handle(&resolved_addr.name) {
+            cf
+        } else {
+            return vec![None; keys.count()];
+        };
+
+        self.snapshot
+            .multi_get_cf(keys.map(|key| (cf, resolved_addr.keyed(key))))
+            .into_iter()
+            .collect::<Result<_, _>>()
             .unwrap_or_else(|e| panic!("{}", e))
     }
 

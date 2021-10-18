@@ -97,8 +97,7 @@
     // Next `cast_*` lints don't give alternatives.
     clippy::cast_possible_wrap, clippy::cast_possible_truncation, clippy::cast_sign_loss,
     // Next lints produce too much noise/false positives.
-    clippy::module_name_repetitions, clippy::similar_names, clippy::must_use_candidate,
-    clippy::pub_enum_variant_names, clippy::upper_case_acronyms,
+    clippy::module_name_repetitions, clippy::similar_names, clippy::must_use_candidate, clippy::upper_case_acronyms,
     // '... may panic' lints.
     clippy::indexing_slicing,
     // Too much work to fix.
