@@ -127,7 +127,7 @@ where
     /// assert!(index.contains(&1));
     /// ```
     pub fn insert(&mut self, item: &K) {
-        self.base.put(item, ())
+        self.base.put(item, ());
     }
 
     /// Removes a key from the set.
@@ -148,7 +148,7 @@ where
     /// assert!(!index.contains(&1));
     /// ```
     pub fn remove(&mut self, item: &K) {
-        self.base.remove(item)
+        self.base.remove(item);
     }
 
     /// Clears the set, removing all values.
@@ -174,7 +174,7 @@ where
     /// assert!(!index.contains(&1));
     /// ```
     pub fn clear(&mut self) {
-        self.base.clear()
+        self.base.clear();
     }
 }
 
