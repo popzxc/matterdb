@@ -186,26 +186,24 @@ impl<T: RawAccess> ViewInner<T> {
     where
         I: iter::Iterator<Item = Vec<u8>>,
     {
-        let indexed_keys: Vec<_> = keys.into_iter().enumerate().collect();
         let changes = self.changes.as_ref();
 
-        let mut res = vec![None; indexed_keys.len()];
-
-        let db_keys: Vec<_> = indexed_keys
-            .into_iter()
-            .filter(|(idx, key)| {
+        let (mut res, db_keys) = keys.into_iter().enumerate().fold(
+            (Vec::new(), Vec::new()),
+            |(mut res, mut db_keys), (idx, key)| {
                 if let Ok(item) = changes
-                    .and_then(|changes| changes.get(key).transpose())
+                    .and_then(|changes| changes.get(&key).transpose())
                     .transpose()
                 {
-                    res[*idx] = item;
-
-                    false
+                    res.push(item);
                 } else {
-                    true
+                    res.push(None);
+                    db_keys.push((idx, key));
                 }
-            })
-            .collect();
+
+                (res, db_keys)
+            },
+        );
 
         let db_res = self.snapshot().multi_get(
             &self.address,

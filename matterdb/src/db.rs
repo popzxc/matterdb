@@ -691,33 +691,30 @@ impl Snapshot for Patch {
         name: &ResolvedAddress,
         keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
     ) -> Vec<Option<Vec<u8>>> {
-        let indexed_keys: Vec<_> = keys.into_iter().enumerate().collect();
         let changes = self.changes.get(name);
 
-        let mut res = vec![None; indexed_keys.len()];
-
-        let db_keys: Vec<_> = indexed_keys
-            .into_iter()
-            .filter(|(idx, key)| {
+        let (mut res, db_keys) = keys.into_iter().enumerate().fold(
+            (Vec::new(), Vec::new()),
+            |(mut res, mut db_keys), (idx, key)| {
                 if let Ok(item) = changes
                     .and_then(|changes| changes.get(key).transpose())
                     .transpose()
                 {
-                    res[*idx] = item;
-
-                    false
+                    res.push(item);
                 } else {
-                    true
+                    res.push(None);
+                    db_keys.push((idx, key));
                 }
-            })
-            .collect();
+
+                (res, db_keys)
+            },
+        );
 
         let db_res = self
             .snapshot
             .multi_get(name, &mut db_keys.iter().map(|(_, key)| *key));
 
         for ((idx, _), item) in db_keys.into_iter().zip(db_res) {
-            println!("{:?}", item);
             res[idx] = item;
         }
 
