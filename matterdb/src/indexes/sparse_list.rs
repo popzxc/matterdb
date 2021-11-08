@@ -3,7 +3,7 @@
 //! The given section contains methods related to `SparseListIndex` and iterators
 //! over the items of this index.
 
-use std::{io::Error, marker::PhantomData};
+use std::{borrow::Borrow, io::Error, marker::PhantomData};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
@@ -118,6 +118,32 @@ where
     /// ```
     pub fn get(&self, index: u64) -> Option<V> {
         self.base.get(&index)
+    }
+
+    /// Returns elements corresponding to the supplied positions.
+    /// In case if the position is out of bounds or an element doesn't exist,
+    /// `None` will be placed at the element position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, ListIndex};
+    ///
+    /// let db = TemporaryDB::new();
+    /// let fork = db.fork();
+    /// let mut index = fork.get_sparse_list("name");
+    /// assert_eq!(None, index.get(0));
+    ///
+    /// index.push(42);
+    /// index.push(24);
+    /// assert_eq!(vec![Some(42), Some(24)], index.multi_get(&[0, 1]));
+    /// ```
+    pub fn multi_get<I>(&self, indexes: I) -> Vec<Option<V>>
+    where
+        I: IntoIterator,
+        I::Item: Borrow<u64>,
+    {
+        self.base.multi_get(indexes)
     }
 
     /// Returns `true` if the list contains no elements.
@@ -530,6 +556,21 @@ mod tests {
         for el in &extended_by_again {
             list_index.push(*el);
         }
+        assert_eq!(
+            list_index.multi_get(0..10),
+            vec![
+                Some(45),
+                Some(3422),
+                Some(777),
+                Some(666),
+                Some(999),
+                None,
+                None,
+                None,
+                None,
+                None
+            ]
+        );
         assert_eq!(Some(666), list_index.get(3));
         assert_eq!(Some(999), list_index.get(4));
         assert_eq!(5, list_index.capacity());
@@ -539,6 +580,8 @@ mod tests {
         assert_eq!(None, list_index.remove(1));
         assert_eq!(5, list_index.capacity());
         assert_eq!(4, list_index.len());
+
+        assert_eq!(list_index.multi_get(0..3), vec![Some(45), None, Some(777),]);
 
         assert_eq!(Some(777), list_index.remove(2));
         assert_eq!(5, list_index.capacity());
