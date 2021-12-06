@@ -73,6 +73,30 @@ where
         self.base.get(key)
     }
 
+    /// Returns values corresponding to the keys.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, MapIndex};
+    ///
+    /// let db = TemporaryDB::default();
+    /// let fork = db.fork();
+    /// let mut index = fork.get_map("name");
+    /// assert!(index.get(&1).is_none());
+    ///
+    /// index.put(&1, 2);
+    /// index.put(&2, 3);
+    /// assert_eq!(vec![Some(2), Some(3)], index.multi_get(&[1, 2]));
+    /// ```
+    pub fn multi_get<I>(&self, keys: I) -> Vec<Option<V>>
+    where
+        I: IntoIterator,
+        I::Item: Borrow<K>,
+    {
+        self.base.multi_get(keys)
+    }
+
     /// Returns `true` if the map contains a value corresponding to the specified key.
     ///
     /// # Examples
@@ -383,6 +407,11 @@ mod tests {
         map_index.put(&1_u8, 1_u8);
         map_index.put(&2_u8, 2_u8);
         map_index.put(&3_u8, 3_u8);
+
+        assert_eq!(
+            map_index.multi_get(0..4),
+            vec![None, Some(1), Some(2), Some(3)]
+        );
 
         assert_eq!(
             map_index.iter().collect::<Vec<(u8, u8)>>(),

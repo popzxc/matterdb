@@ -6,7 +6,12 @@ pub use self::{
     },
 };
 
-use std::{borrow::Cow, fmt, iter::Peekable, marker::PhantomData};
+use std::{
+    borrow::{Borrow, Cow},
+    fmt, iter,
+    iter::Peekable,
+    marker::PhantomData,
+};
 
 use crate::{
     db::{Change, ChangesMut, ChangesRef, ForkIter, ViewChanges},
@@ -177,6 +182,41 @@ impl<T: RawAccess> ViewInner<T> {
             .unwrap_or_else(|()| self.snapshot().get(&self.address, key))
     }
 
+    fn multi_get_bytes<I>(&self, keys: I) -> Vec<Option<Vec<u8>>>
+    where
+        I: iter::Iterator<Item = Vec<u8>>,
+    {
+        let changes = self.changes.as_ref();
+
+        let (mut res, db_keys) = keys.into_iter().enumerate().fold(
+            (Vec::new(), Vec::new()),
+            |(mut res, mut db_keys), (idx, key)| {
+                if let Ok(item) = changes
+                    .and_then(|changes| changes.get(&key).transpose())
+                    .transpose()
+                {
+                    res.push(item);
+                } else {
+                    res.push(None);
+                    db_keys.push((idx, key));
+                }
+
+                (res, db_keys)
+            },
+        );
+
+        let db_res = self.snapshot().multi_get(
+            &self.address,
+            &mut db_keys.iter().map(|(_, key)| key.as_ref()),
+        );
+
+        for ((idx, _), item) in db_keys.into_iter().zip(db_res) {
+            res[idx] = item;
+        }
+
+        res
+    }
+
     fn contains_raw_key(&self, key: &[u8]) -> bool {
         self.changes
             .as_ref()
@@ -239,6 +279,16 @@ impl<T: RawAccess> View<T> {
         }
     }
 
+    fn multi_get_bytes<I>(&self, keys: I) -> Vec<Option<Vec<u8>>>
+    where
+        I: Iterator<Item = Vec<u8>>,
+    {
+        match self {
+            Self::Real(inner) => inner.multi_get_bytes(keys),
+            Self::Phantom => vec![None; keys.count()],
+        }
+    }
+
     fn contains_raw_key(&self, key: &[u8]) -> bool {
         match self {
             Self::Real(inner) => inner.contains_raw_key(key),
@@ -262,6 +312,23 @@ impl<T: RawAccess> View<T> {
         self.get_bytes(&key_bytes(key)).map(|v| {
             BinaryValue::from_bytes(Cow::Owned(v)).expect("Error while deserializing value")
         })
+    }
+
+    pub fn multi_get<K, V, I>(&self, keys: I) -> Vec<Option<V>>
+    where
+        K: BinaryKey + ?Sized,
+        V: BinaryValue,
+        I: IntoIterator,
+        I::Item: Borrow<K>,
+    {
+        self.multi_get_bytes(&mut keys.into_iter().map(|key| key_bytes(key.borrow())))
+            .into_iter()
+            .map(|v| {
+                v.map(|v| {
+                    BinaryValue::from_bytes(Cow::Owned(v)).expect("Error while deserializing value")
+                })
+            })
+            .collect()
     }
 
     /// Returns `true` if the index contains a value of *any* type for the specified key of

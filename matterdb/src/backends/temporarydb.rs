@@ -4,6 +4,7 @@ use crossbeam::sync::ShardedLock;
 use smallvec::SmallVec;
 use std::{
     collections::{btree_map::Range, BTreeMap, HashMap},
+    iter,
     iter::{Iterator, Peekable},
     sync::Arc,
 };
@@ -172,6 +173,21 @@ impl Snapshot for TemporarySnapshot {
     fn get(&self, name: &ResolvedAddress, key: &[u8]) -> Option<Vec<u8>> {
         let collection = self.snapshot.get(name)?;
         collection.get(name.keyed(key).as_ref()).cloned()
+    }
+
+    fn multi_get<'a>(
+        &self,
+        name: &ResolvedAddress,
+        keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
+    ) -> Vec<Option<Vec<u8>>> {
+        let collection = if let Some(coll) = self.snapshot.get(name) {
+            coll
+        } else {
+            return vec![None; keys.count()];
+        };
+
+        keys.map(|key| collection.get(name.keyed(key).as_ref()).cloned())
+            .collect()
     }
 
     fn iter(&self, name: &ResolvedAddress, from: &[u8]) -> Iter<'_> {

@@ -3,6 +3,7 @@
 //! The given section contains methods related to `ListIndex` and the iterator
 //! over the items of this list.
 
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 
 use crate::{
@@ -71,6 +72,32 @@ where
     /// ```
     pub fn get(&self, index: u64) -> Option<V> {
         self.base.get(&index)
+    }
+
+    /// Returns elements corresponding to the supplied positions.
+    /// In case if the position is out of bounds, `None` will be
+    /// placed at the element position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use matterdb::{access::CopyAccessExt, TemporaryDB, Database, ListIndex};
+    ///
+    /// let db = TemporaryDB::new();
+    /// let fork = db.fork();
+    /// let mut index = fork.get_list("name");
+    /// assert_eq!(None, index.get(0));
+    ///
+    /// index.push(42);
+    /// index.push(24);
+    /// assert_eq!(vec![Some(42), Some(24)], index.multi_get(&[0, 1]));
+    /// ```
+    pub fn multi_get<I>(&self, indexes: I) -> Vec<Option<V>>
+    where
+        I: IntoIterator,
+        I::Item: Borrow<u64>,
+    {
+        self.base.multi_get(indexes)
     }
 
     /// Returns the last element of the list or `None` if the list is empty.
@@ -201,7 +228,7 @@ where
     pub fn push(&mut self, value: V) {
         let len = self.len();
         self.base.put(&len, value);
-        self.set_len(len + 1)
+        self.set_len(len + 1);
     }
 
     /// Removes the last element from the list and returns it, or returns `None`
@@ -316,7 +343,7 @@ where
                 index
             );
         }
-        self.base.put(&index, value)
+        self.base.put(&index, value);
     }
 
     /// Clears the list, removing all values.
@@ -348,7 +375,7 @@ where
     }
 
     fn set_len(&mut self, len: u64) {
-        self.state.set(len)
+        self.state.set(len);
     }
 }
 
@@ -409,6 +436,21 @@ mod tests {
         for el in &extended_by_again {
             list_index.push(*el);
         }
+        assert_eq!(
+            list_index.multi_get(0..10),
+            vec![
+                Some(45),
+                Some(3422),
+                Some(777),
+                Some(666),
+                Some(999),
+                None,
+                None,
+                None,
+                None,
+                None
+            ]
+        );
         assert_eq!(Some(666), list_index.get(3));
         assert_eq!(Some(999), list_index.get(4));
         assert_eq!(5, list_index.len());

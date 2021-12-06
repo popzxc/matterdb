@@ -90,7 +90,7 @@ impl BinaryAttribute for u64 {
     }
 
     fn write(&self, buffer: &mut Vec<u8>) {
-        buffer.write_u64::<LittleEndian>(*self).unwrap()
+        buffer.write_u64::<LittleEndian>(*self).unwrap();
     }
 
     fn read(mut buffer: &[u8]) -> Result<Self, Error> {
@@ -105,7 +105,7 @@ impl BinaryAttribute for Vec<u8> {
     }
 
     fn write(&self, buffer: &mut Vec<u8>) {
-        buffer.extend_from_slice(self)
+        buffer.extend_from_slice(self);
     }
 
     fn read(buffer: &[u8]) -> Result<Self, Error> {

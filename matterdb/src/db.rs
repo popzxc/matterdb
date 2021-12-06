@@ -1,7 +1,7 @@
 use std::{
     cell::RefCell,
     collections::{BTreeMap, HashMap},
-    fmt,
+    fmt, iter,
     iter::{Iterator as StdIterator, Peekable},
     marker::PhantomData,
     mem,
@@ -639,6 +639,14 @@ pub trait Snapshot: Send + Sync + 'static {
     /// or `None` if it does not exist.
     fn get(&self, name: &ResolvedAddress, key: &[u8]) -> Option<Vec<u8>>;
 
+    /// Returns a value for each key corresponding to the specified address and this key as a raw vector of bytes,
+    /// or `None` if it does not exist.
+    fn multi_get<'a>(
+        &self,
+        name: &ResolvedAddress,
+        keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
+    ) -> Vec<Option<Vec<u8>>>;
+
     /// Returns `true` if the snapshot contains a value for the specified address and key.
     ///
     /// The default implementation checks existence of the value using [`get`](#tymethod.get).
@@ -676,6 +684,41 @@ impl Snapshot for Patch {
             .map_or(Err(()), |changes| changes.get(key))
             // At this point, `Err(_)` signifies that we need to retrieve data from the snapshot.
             .unwrap_or_else(|()| self.snapshot.get(name, key))
+    }
+
+    fn multi_get<'a>(
+        &self,
+        name: &ResolvedAddress,
+        keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
+    ) -> Vec<Option<Vec<u8>>> {
+        let changes = self.changes.get(name);
+
+        let (mut res, db_keys) = keys.into_iter().enumerate().fold(
+            (Vec::new(), Vec::new()),
+            |(mut res, mut db_keys), (idx, key)| {
+                if let Ok(item) = changes
+                    .and_then(|changes| changes.get(key).transpose())
+                    .transpose()
+                {
+                    res.push(item);
+                } else {
+                    res.push(None);
+                    db_keys.push((idx, key));
+                }
+
+                (res, db_keys)
+            },
+        );
+
+        let db_res = self
+            .snapshot
+            .multi_get(name, &mut db_keys.iter().map(|(_, key)| *key));
+
+        for ((idx, _), item) in db_keys.into_iter().zip(db_res) {
+            res[idx] = item;
+        }
+
+        res
     }
 
     fn contains(&self, name: &ResolvedAddress, key: &[u8]) -> bool {
@@ -964,6 +1007,14 @@ impl Snapshot for Box<dyn Snapshot> {
         self.as_ref().get(name, key)
     }
 
+    fn multi_get<'a>(
+        &self,
+        name: &ResolvedAddress,
+        keys: &'a mut dyn iter::Iterator<Item = &'a [u8]>,
+    ) -> Vec<Option<Vec<u8>>> {
+        self.as_ref().multi_get(name, keys)
+    }
+
     fn contains(&self, name: &ResolvedAddress, key: &[u8]) -> bool {
         self.as_ref().contains(name, key)
     }
@@ -1147,7 +1198,7 @@ mod tests {
     };
     use crate::{access::CopyAccessExt, TemporaryDB};
 
-    use std::collections::HashSet;
+    use std::{collections::HashSet, iter};
 
     #[test]
     fn readonly_indexes_are_timely_dropped() {
@@ -1241,10 +1292,32 @@ mod tests {
         assert_eq!(backup.get(&"foo".into(), &[]), Some(vec![2]));
         assert_eq!(backup.get(&"bar".into(), &[1]), None);
 
+        assert_eq!(
+            snapshot.multi_get(&"foo".into(), &mut iter::once(&[] as &[u8])),
+            vec![Some(vec![3])]
+        );
+        assert_eq!(
+            backup.multi_get(&"foo".into(), &mut iter::once(&[] as &[u8])),
+            vec![Some(vec![2])]
+        );
+        assert_eq!(
+            backup.multi_get(&"bar".into(), &mut iter::once(&[1u8] as &[u8])),
+            vec![None]
+        );
+
         db.merge(backup).unwrap();
         let snapshot = db.snapshot();
         assert_eq!(snapshot.get(&"foo".into(), &[]), Some(vec![2]));
         assert_eq!(snapshot.get(&"bar".into(), &[1]), None);
+
+        assert_eq!(
+            snapshot.multi_get(&"foo".into(), &mut iter::once(&[] as &[u8])),
+            vec![Some(vec![2])]
+        );
+        assert_eq!(
+            snapshot.multi_get(&"bar".into(), &mut iter::once(&[1u8] as &[u8])),
+            vec![None]
+        );
 
         // Check that DB continues working as usual after a rollback.
         let fork = db.fork();
@@ -1257,8 +1330,13 @@ mod tests {
         }
         let backup1 = db.merge_with_backup(fork.into_patch()).unwrap();
         let snapshot = db.snapshot();
-        assert_eq!(snapshot.get(&"foo".into(), &[]), Some(vec![4]));
-        assert_eq!(snapshot.get(&"foo".into(), &[0, 0]), Some(vec![255]));
+        assert_eq!(
+            snapshot.multi_get(
+                &"foo".into(),
+                &mut vec![&[] as &[u8], &[0u8, 0]].into_iter()
+            ),
+            vec![Some(vec![4]), Some(vec![255])]
+        );
 
         let fork = db.fork();
         {
@@ -1267,8 +1345,13 @@ mod tests {
         }
         let backup2 = db.merge_with_backup(fork.into_patch()).unwrap();
         let snapshot = db.snapshot();
-        assert_eq!(snapshot.get(&"foo".into(), &[]), Some(vec![4]));
-        assert_eq!(snapshot.get(&"foo".into(), &[0, 0]), Some(vec![255]));
+        assert_eq!(
+            snapshot.multi_get(
+                &"foo".into(),
+                &mut vec![&[] as &[u8], &[0u8, 0]].into_iter()
+            ),
+            vec![Some(vec![4]), Some(vec![255])]
+        );
         assert_eq!(snapshot.get(&"bar".into(), &[1]), Some(vec![254]));
 
         // Check patches used as `Snapshot`s.
@@ -1281,8 +1364,10 @@ mod tests {
         db.merge(backup2).unwrap();
         db.merge(backup1).unwrap();
         let snapshot = db.snapshot();
-        assert_eq!(snapshot.get(&"foo".into(), &[]), Some(vec![2]));
-        assert_eq!(snapshot.get(&"foo".into(), &[0, 0]), None);
+        assert_eq!(
+            snapshot.multi_get(&"foo".into(), &mut vec![&[] as &[u8], &[0, 0]].into_iter()),
+            vec![Some(vec![2]), None]
+        );
         assert_eq!(snapshot.get(&"bar".into(), &[1]), None);
     }
 
@@ -1305,14 +1390,22 @@ mod tests {
             view.put(&vec![2], vec![4]);
         }
         let backup = db.merge_with_backup(fork.into_patch()).unwrap();
-        assert_eq!(backup.get(&"foo".into(), &[]), Some(vec![1]));
-        assert_eq!(backup.get(&"foo".into(), &[1]), Some(vec![2]));
-        assert_eq!(backup.get(&"foo".into(), &[2]), None);
+        assert_eq!(
+            backup.multi_get(
+                &"foo".into(),
+                &mut vec![&[] as &[u8], &[1], &[2]].into_iter()
+            ),
+            vec![Some(vec![1]), Some(vec![2]), None]
+        );
         db.merge(backup).unwrap();
         let snapshot = db.snapshot();
-        assert_eq!(snapshot.get(&"foo".into(), &[]), Some(vec![1]));
-        assert_eq!(snapshot.get(&"foo".into(), &[1]), Some(vec![2]));
-        assert_eq!(snapshot.get(&"foo".into(), &[2]), None);
+        assert_eq!(
+            snapshot.multi_get(
+                &"foo".into(),
+                &mut vec![&[] as &[u8], &[1], &[2]].into_iter()
+            ),
+            vec![Some(vec![1]), Some(vec![2]), None]
+        );
     }
 
     #[test]
