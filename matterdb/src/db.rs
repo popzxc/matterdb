@@ -696,10 +696,7 @@ impl Snapshot for Patch {
         let (mut res, db_keys) = keys.into_iter().enumerate().fold(
             (Vec::new(), Vec::new()),
             |(mut res, mut db_keys), (idx, key)| {
-                if let Ok(item) = changes
-                    .and_then(|changes| changes.get(key).transpose())
-                    .transpose()
-                {
+                if let Some(Ok(item)) = changes.map(|changes| changes.get(key)) {
                     res.push(item);
                 } else {
                     res.push(None);
