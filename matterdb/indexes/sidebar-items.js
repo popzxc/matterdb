@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Entries","Entry","Group","KeySetIndex","Keys","ListIndex","MapIndex","SparseListIndex","Values"],"trait":["IndexIterator"]};

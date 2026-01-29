@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Access generalizations, mainly useful for bindings."><title>matterdb::generic - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-0ce1a80b.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="matterdb" data-themes="" data-resource-suffix="" data-rustdoc-version="1.89.0-nightly (2eef47813 2025-05-22)" data-channel="nightly" data-search-js="search-f7877310.js" data-settings-js="settings-5514c975.js" ><script src="../../static.files/storage-4e99c027.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-fd3af306.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-32bb7600.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../matterdb/index.html">matterdb</a><span class="version">2.0.0-pre</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module generic</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#examples" title="Examples">Examples</a></li></ul><h3><a href="#enums">Module Items</a></h3><ul class="block"><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate matterdb</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">matterdb</a></div><h1>Module <span>generic</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/matterdb/generic.rs.html#1-597">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Access generalizations, mainly useful for bindings.</p>
+<p>This module provides:</p>
+<ul>
+<li><a href="enum.GenericRawAccess.html"><code>GenericRawAccess</code></a>, an enumeration of all available types of raw accesses (e.g., <code>Snapshot</code>
+or <code>Fork</code>)</li>
+<li><a href="enum.GenericAccess.html"><code>GenericAccess</code></a>, an enumeration of all high-level access types (e.g., <code>Prefixed</code>
+or <code>Migration</code>)</li>
+<li><a href="type.ErasedAccess.html"><code>ErasedAccess</code></a>, which combines the previous two types and thus is the most abstract kind
+of access to the database.</li>
+</ul>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>Basic usage of <code>ErasedAccess</code>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>matterdb::{
+    access::{AccessExt, Prefixed}, migration::Migration, Database, TemporaryDB,
+};
+<span class="kw">use </span>matterdb::generic::{ErasedAccess, IntoErased};
+
+<span class="kw">fn </span>manipulate_db(access: <span class="kw-2">&amp;</span>ErasedAccess&lt;<span class="lifetime">'_</span>&gt;) {
+    <span class="macro">assert!</span>(access.is_mutable());
+    <span class="kw">let </span><span class="kw-2">mut </span>list = access.get_list::&lt;<span class="kw">_</span>, u32&gt;(<span class="string">"list"</span>);
+    list.extend(<span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);
+    access.get_entry(<span class="string">"entry"</span>).set(<span class="string">"!"</span>.to_owned());
+}
+
+<span class="kw">fn </span>check_db(access: <span class="kw-2">&amp;</span>ErasedAccess&lt;<span class="lifetime">'_</span>&gt;) {
+    <span class="macro">assert!</span>(!access.is_mutable());
+    <span class="kw">let </span>list = access.get_list::&lt;<span class="kw">_</span>, u32&gt;(<span class="string">"list"</span>);
+    <span class="macro">assert_eq!</span>(list.len(), <span class="number">3</span>);
+    <span class="macro">assert_eq!</span>(list.iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(), <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);
+    <span class="kw">let </span>entry = access.get_entry::&lt;<span class="kw">_</span>, String&gt;(<span class="string">"entry"</span>);
+    <span class="macro">assert_eq!</span>(entry.get().unwrap(), <span class="string">"!"</span>);
+}
+
+<span class="kw">let </span>db = TemporaryDB::new();
+<span class="kw">let </span>fork = db.fork();
+<span class="comment">// Create a `Prefixed` access and use `IntoErased` trait to convert it
+// to the most generic access.
+</span>{
+    <span class="kw">let </span>erased = Prefixed::new(<span class="string">"ns"</span>, <span class="kw-2">&amp;</span>fork).into_erased();
+    manipulate_db(<span class="kw-2">&amp;</span>erased);
+}
+<span class="comment">// The same method may be applied to other access kinds, e.g., `Migration`s.
+</span>{
+    <span class="kw">let </span>erased = Migration::new(<span class="string">"other-ns"</span>, <span class="kw-2">&amp;</span>fork).into_erased();
+    manipulate_db(<span class="kw-2">&amp;</span>erased);
+}
+db.merge(fork.into_patch()).unwrap();
+
+<span class="kw">let </span>snapshot = db.snapshot();
+<span class="kw">let </span>erased = Prefixed::new(<span class="string">"ns"</span>, snapshot.as_ref()).into_erased();
+check_db(<span class="kw-2">&amp;</span>erased);
+<span class="kw">let </span>erased = Migration::new(<span class="string">"other-ns"</span>, snapshot.as_ref()).into_erased();
+check_db(<span class="kw-2">&amp;</span>erased);</code></pre></div>
+<p>Use of <code>GenericRawAccess</code> with owned accesses:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>matterdb::{access::AccessExt, Database, TemporaryDB};
+<span class="kw">use </span>matterdb::generic::GenericRawAccess;
+<span class="kw">use </span>std::rc::Rc;
+
+<span class="kw">let </span>db = TemporaryDB::new();
+<span class="kw">let </span>fork = db.fork();
+<span class="kw">let </span>access = GenericRawAccess::from(fork); <span class="comment">// Consumes `fork`!
+</span>access.get_map(<span class="string">"list"</span>).put(<span class="string">"foo"</span>, <span class="string">"bar"</span>.to_owned());
+<span class="comment">// Get `Fork` back from the access. The caller should ensure
+// that `access` is not used elsewhere at this point, e.g.,
+// by instantiated indexes.
+</span><span class="kw">let </span>fork = <span class="kw">match </span>access {
+    GenericRawAccess::OwnedFork(fork) =&gt; Rc::try_unwrap(fork).unwrap(),
+    <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
+};
+db.merge(fork.into_patch()).unwrap();</code></pre></div>
+</div></details><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.GenericAccess.html" title="enum matterdb::generic::GenericAccess">Generic<wbr>Access</a></dt><dd>Generic access containing any kind of accesses supported by the database.</dd><dt><a class="enum" href="enum.GenericRawAccess.html" title="enum matterdb::generic::GenericRawAccess">Generic<wbr>RawAccess</a></dt><dd>Container for an arbitrary raw access. For <code>Fork</code>s and <code>Snapshot</code>s, this type provides
+both owned and borrowed variants.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.IntoErased.html" title="trait matterdb::generic::IntoErased">Into<wbr>Erased</a></dt><dd>Conversion to a most generic access to the database.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.ErasedAccess.html" title="type matterdb::generic::ErasedAccess">Erased<wbr>Access</a></dt><dd>Most generic access to the database, encapsulating any of base accesses and any of
+possible access restrictions.</dd></dl></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["MigrationError"],"fn":["flush_migration","rollback_migration"],"struct":["AbortHandle","Migration","MigrationHelper","PersistentIter","PersistentIters","PersistentKeys","Scratchpad"]};

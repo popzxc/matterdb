@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Low-level storage backend implementing a collection of named key-value stores (aka column families)."><title>Database in matterdb - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-0ce1a80b.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="matterdb" data-themes="" data-resource-suffix="" data-rustdoc-version="1.89.0-nightly (2eef47813 2025-05-22)" data-channel="nightly" data-search-js="search-f7877310.js" data-settings-js="settings-5514c975.js" ><script src="../static.files/storage-4e99c027.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-fd3af306.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-32bb7600.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../matterdb/index.html">matterdb</a><span class="version">2.0.0-pre</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Database</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#merge-workflow" title="Merge Workflow">Merge Workflow</a></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.merge" title="merge">merge</a></li><li><a href="#tymethod.merge_sync" title="merge_sync">merge_sync</a></li><li><a href="#tymethod.snapshot" title="snapshot">snapshot</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.fork" title="fork">fork</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block trait-implementation"><li><a href="#impl-Debug-for-dyn+Database" title="Debug">Debug</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate matterdb</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">matterdb</a></div><h1>Trait <span class="trait">Database</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/matterdb/db.rs.html#478-528">Source</a> </span></div><pre class="rust item-decl"><code>pub trait Database:
+    <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>
+    + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a>
+    + 'static {
+    // Required methods
+    fn <a href="#tymethod.snapshot" class="fn">snapshot</a>(&amp;self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="trait.Snapshot.html" title="trait matterdb::Snapshot">Snapshot</a>&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.merge" class="fn">merge</a>(&amp;self, patch: <a class="struct" href="struct.Patch.html" title="struct matterdb::Patch">Patch</a>) -&gt; <a class="type" href="type.Result.html" title="type matterdb::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.merge_sync" class="fn">merge_sync</a>(&amp;self, patch: <a class="struct" href="struct.Patch.html" title="struct matterdb::Patch">Patch</a>) -&gt; <a class="type" href="type.Result.html" title="type matterdb::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;;
+
+    // Provided method
+    fn <a href="#method.fork" class="fn">fork</a>(&amp;self) -&gt; <a class="struct" href="struct.Fork.html" title="struct matterdb::Fork">Fork</a> { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Low-level storage backend implementing a collection of named key-value stores
+(aka column families).</p>
+<p>A <code>Database</code> instance is shared across different threads, so it must be <code>Sync</code> and <code>Send</code>.</p>
+<p>There is no way to directly interact with data in the database; use <a href="#tymethod.snapshot"><code>snapshot</code></a>, <a href="#method.fork"><code>fork</code></a>
+and <a href="#tymethod.merge"><code>merge</code></a> methods for indirect interaction. See <a href="index.html">the crate-level documentation</a>
+for more details.</p>
+<p>Note that <code>Database</code> effectively has <a href="https://doc.rust-lang.org/book/ch15-05-interior-mutability.html">interior mutability</a>;
+<code>merge</code> and <code>merge_sync</code> methods take a shared reference to the database (<code>&amp;self</code>)
+rather than an exclusive one (<code>&amp;mut self</code>). This means that the following code compiles:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>matterdb::{access::CopyAccessExt, Database, TemporaryDB};
+
+<span class="comment">// not declared as `mut db`!
+</span><span class="kw">let </span>db: Box&lt;<span class="kw">dyn </span>Database&gt; = Box::new(TemporaryDB::new());
+<span class="kw">let </span>fork = db.fork();
+{
+    <span class="kw">let </span><span class="kw-2">mut </span>list = fork.get_list(<span class="string">"list"</span>);
+    list.push(<span class="number">42_u64</span>);
+}
+db.merge(fork.into_patch()).unwrap();</code></pre></div>
+<h2 id="merge-workflow"><a class="doc-anchor" href="#merge-workflow">§</a>Merge Workflow</h2>
+<p>The user of a <code>Database</code> is responsible to ensure that forks are either created and merged
+sequentially or do not contain overlapping changes. By sequential creation we mean the following
+workflow:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>db = TemporaryDB::new();
+<span class="kw">let </span>first_fork = db.fork();
+<span class="comment">// Perform some operations on `first_fork`...
+</span>db.merge(first_fork.into_patch()).unwrap();
+<span class="kw">let </span>second_fork = db.fork();
+<span class="comment">// Perform some operations on `second_fork`...
+</span>db.merge(second_fork.into_patch()).unwrap();</code></pre></div>
+<p>In contrast, this is a non-sequential workflow:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>db = TemporaryDB::new();
+<span class="kw">let </span>first_fork = db.fork();
+<span class="comment">// Perform some operations on `first_fork`...
+</span><span class="kw">let </span>second_fork = db.fork();
+<span class="comment">// Perform some operations on `second_fork`...
+</span>db.merge(first_fork.into_patch()).unwrap();
+db.merge(second_fork.into_patch()).unwrap();</code></pre></div>
+<p>In a non-sequential workflow, <code>first_fork</code> and <code>second_fork</code> <strong>must not</strong> contain overlapping
+changes (i.e., changes to the same index). If they do, the result of the merge may be
+unpredictable to the programmer and may break database invariants, e.g., that the length
+of an index is equal to the number of elements obtained by iterating over the index:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// NEVER USE THIS PATTERN!
+</span><span class="kw">let </span>db = TemporaryDB::new();
+<span class="kw">let </span>first_fork = db.fork();
+first_fork.get_list(<span class="string">"list"</span>).extend(<span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);
+<span class="kw">let </span>second_fork = db.fork();
+second_fork.get_list(<span class="string">"list"</span>).push(<span class="number">4</span>);
+db.merge(first_fork.into_patch()).unwrap();
+db.merge(second_fork.into_patch()).unwrap();
+
+<span class="kw">let </span>snapshot = db.snapshot();
+<span class="kw">let </span>list = snapshot.get_list::&lt;<span class="kw">_</span>, i32&gt;(<span class="string">"list"</span>);
+<span class="macro">assert_eq!</span>(list.len(), <span class="number">1</span>);
+<span class="macro">assert_eq!</span>(list.iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(), <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">2</span>, <span class="number">3</span>]);
+<span class="comment">// ^-- Oops, we got two phantom elements!</span></code></pre></div>
+<p>It is advised to create / merge patches sequentially whenever possible. The concurrent
+workflow should only be used for minor changes, for which the proof that a patch does not overlap
+with concurrent patches is tractable.</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.snapshot" class="method"><a class="src rightside" href="../src/matterdb/db.rs.html#480">Source</a><h4 class="code-header">fn <a href="#tymethod.snapshot" class="fn">snapshot</a>(&amp;self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="trait.Snapshot.html" title="trait matterdb::Snapshot">Snapshot</a>&gt;</h4></section></summary><div class="docblock"><p>Creates a new snapshot of the database from its current state.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.merge" class="method"><a class="src rightside" href="../src/matterdb/db.rs.html#509">Source</a><h4 class="code-header">fn <a href="#tymethod.merge" class="fn">merge</a>(&amp;self, patch: <a class="struct" href="struct.Patch.html" title="struct matterdb::Patch">Patch</a>) -&gt; <a class="type" href="type.Result.html" title="type matterdb::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Atomically applies a sequence of patch changes to the database.</p>
+<p>Note that this method may be called concurrently from different threads, the
+onus to guarantee atomicity is on the implementor of the trait.</p>
+<h5 id="logical-safety"><a class="doc-anchor" href="#logical-safety">§</a>Logical Safety</h5>
+<p>Merging several patches which are not created sequentially and contain
+overlapping changes may result in the unexpected storage state and lead to the hard-to debug
+errors, storage leaks etc. See the <a href="#merge-workflow">trait docs</a> for more details.</p>
+<h5 id="errors"><a class="doc-anchor" href="#errors">§</a>Errors</h5>
+<p>If this method encounters any form of I/O or other error during merging, an error variant
+will be returned. In case of an error, the method guarantees no changes are applied to
+the database.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.merge_sync" class="method"><a class="src rightside" href="../src/matterdb/db.rs.html#527">Source</a><h4 class="code-header">fn <a href="#tymethod.merge_sync" class="fn">merge_sync</a>(&amp;self, patch: <a class="struct" href="struct.Patch.html" title="struct matterdb::Patch">Patch</a>) -&gt; <a class="type" href="type.Result.html" title="type matterdb::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Atomically applies a sequence of patch changes to the database with fsync.</p>
+<p>Note that this method may be called concurrently from different threads, the
+onus to guarantee atomicity is on the implementor of the trait.</p>
+<h5 id="logical-safety-1"><a class="doc-anchor" href="#logical-safety-1">§</a>Logical Safety</h5>
+<p>Merging several patches which are not created sequentially and contain
+overlapping changes may result in the unexpected storage state and lead to the hard-to debug
+errors, storage leaks etc. See the <a href="#merge-workflow">trait docs</a> for more details.</p>
+<h5 id="errors-1"><a class="doc-anchor" href="#errors-1">§</a>Errors</h5>
+<p>If this method encounters any form of I/O or other error during merging, an error variant
+will be returned. In case of an error, the method guarantees no changes are applied to
+the database.</p>
+</div></details></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.fork" class="method"><a class="src rightside" href="../src/matterdb/db.rs.html#483-491">Source</a><h4 class="code-header">fn <a href="#method.fork" class="fn">fork</a>(&amp;self) -&gt; <a class="struct" href="struct.Fork.html" title="struct matterdb::Fork">Fork</a></h4></section></summary><div class="docblock"><p>Creates a new fork of the database from its current state.</p>
+</div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-Debug-for-dyn+Database" class="impl"><a class="src rightside" href="../src/matterdb/db.rs.html#1084-1088">Source</a><a href="#impl-Debug-for-dyn+Database" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for dyn <a class="trait" href="trait.Database.html" title="trait matterdb::Database">Database</a></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.fmt" class="method trait-impl"><a class="src rightside" href="../src/matterdb/db.rs.html#1085-1087">Source</a><a href="#method.fmt" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt" class="fn">fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>&lt;'_&gt;) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></h4></section></summary><div class='docblock'>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></div></details></div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-Database-for-RocksDB" class="impl"><a class="src rightside" href="../src/matterdb/backends/rocksdb.rs.html#265-280">Source</a><a href="#impl-Database-for-RocksDB" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Database.html" title="trait matterdb::Database">Database</a> for <a class="struct" href="struct.RocksDB.html" title="struct matterdb::RocksDB">RocksDB</a></h3></section><section id="impl-Database-for-TemporaryDB" class="impl"><a class="src rightside" href="../src/matterdb/backends/temporarydb.rs.html#69-128">Source</a><a href="#impl-Database-for-TemporaryDB" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Database.html" title="trait matterdb::Database">Database</a> for <a class="struct" href="struct.TemporaryDB.html" title="struct matterdb::TemporaryDB">TemporaryDB</a></h3></section></div><script src="../trait.impl/matterdb/db/trait.Database.js" async></script></section></div></main></body></html>

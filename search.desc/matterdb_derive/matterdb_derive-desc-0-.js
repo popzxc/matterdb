@@ -1,0 +1,1 @@
+searchState.loadedDescShard("matterdb_derive", 0, "This crate provides macros for deriving some useful …\nDerives <code>BinaryValue</code> trait. The target type must implement …\nDerives <code>FromAccess</code> trait.")

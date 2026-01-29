@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AccessErrorKind"],"struct":["AccessError","Prefixed"],"trait":["Access","AccessExt","AsReadonly","CopyAccessExt","FromAccess","RawAccess","RawAccessMut"]};

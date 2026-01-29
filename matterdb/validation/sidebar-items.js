@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["is_allowed_index_name_char","is_valid_identifier","is_valid_index_name_component"]};

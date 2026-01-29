@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Derives `BinaryValue` trait. The target type must implement (de)serialization logic, which should be provided externally."><title>BinaryValue in matterdb_derive - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-0ce1a80b.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="matterdb_derive" data-themes="" data-resource-suffix="" data-rustdoc-version="1.89.0-nightly (2eef47813 2025-05-22)" data-channel="nightly" data-search-js="search-f7877310.js" data-settings-js="settings-5514c975.js" ><script src="../static.files/storage-4e99c027.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-fd3af306.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-32bb7600.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc derive"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../matterdb_derive/index.html">matterdb_<wbr>derive</a><span class="version">2.0.0-pre</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Binary<wbr>Value</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#container-attributes" title="Container Attributes">Container Attributes</a><ul><li><a href="#codec" title="`codec`"><code>codec</code></a></li></ul></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate matterdb_<wbr>derive</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">matterdb_derive</a></div><h1>Derive Macro <span class="derive">BinaryValue</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/matterdb_derive/lib.rs.html#48-50">Source</a> </span></div><pre class="rust item-decl"><code>#[derive(BinaryValue)]
+{
+    <span class="comment">// Attributes available to this derive:</span>
+    #[binary_value]
+}
+</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Derives <code>BinaryValue</code> trait. The target type must implement (de)serialization logic,
+which should be provided externally.</p>
+<p>The trait currently supports the following codecs:</p>
+<ul>
+<li><code>bincode</code> serialization via the eponymous crate. Switched on by the
+<code>#[binary_value(codec = "bincode")]</code> attribute.</li>
+</ul>
+<h2 id="container-attributes"><a class="doc-anchor" href="#container-attributes">§</a>Container Attributes</h2><h3 id="codec"><a class="doc-anchor" href="#codec">§</a><code>codec</code></h3>
+<p>Selects the serialization codec to use. Allowed values are <code>protobuf</code> (used by default)
+and <code>bincode</code>.</p>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>With Protobuf serialization:</p>
+<p>With <code>bincode</code> serialization:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Clone, Debug, Serialize, Deserialize, BinaryValue)]
+#[binary_value(codec = <span class="string">"bincode"</span>)]
+</span><span class="kw">pub struct </span>Wallet {
+    <span class="kw">pub </span>username: PublicKey,
+    <span class="doccomment">/// Current balance of the wallet.
+    </span><span class="kw">pub </span>balance: u64,
+}
+
+<span class="kw">let </span>wallet = Wallet {
+    username: <span class="string">"Alice"</span>.to_owned(),
+    balance: <span class="number">100</span>,
+};
+<span class="kw">let </span>bytes = wallet.to_bytes();</code></pre></div>
+</div></details></section></div></main></body></html>

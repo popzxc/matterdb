@@ -1,0 +1,3 @@
+var srcIndex = new Map(JSON.parse('[["matterdb",["",[["access",[],["extensions.rs","mod.rs"]],["backends",[],["mod.rs","rocksdb.rs","temporarydb.rs"]],["indexes",[],["entry.rs","group.rs","iter.rs","key_set.rs","list.rs","map.rs","mod.rs","sparse_list.rs"]],["migration",[],["persistent_iter.rs"]],["views",[],["address.rs","metadata.rs","mod.rs"]]],["db.rs","error.rs","generic.rs","keys.rs","lazy.rs","lib.rs","macros.rs","migration.rs","options.rs","validation.rs","values.rs"]]],["matterdb_derive",["",[],["db_traits.rs","lib.rs"]]]]'));
+createSrcSidebar();
+//{"start":36,"fragment_lengths":[446,54]}
